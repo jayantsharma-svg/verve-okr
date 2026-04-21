@@ -39,7 +39,7 @@ export default function BulkImportPage() {
   const fileRef = useRef<HTMLInputElement>(null)
 
   const uploadMutation = useMutation({
-    mutationFn: (file: File) => api.bulk.uploadFile(file, jobType) as Promise<UploadResult>,
+    mutationFn: (file: File) => api.bulk.uploadFile(file, jobType) as unknown as Promise<UploadResult>,
     onSuccess: (data) => {
       setResult(data as any)
       setStatus('preview')
