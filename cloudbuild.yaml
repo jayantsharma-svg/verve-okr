@@ -7,7 +7,7 @@ steps:
       - -f
       - apps/api/Dockerfile
       - -t
-      - gcr.io/$PROJECT_ID/okr-api:$COMMIT_SHA
+      - gcr.io/$PROJECT_ID/okr-api:$_TAG
       - -t
       - gcr.io/$PROJECT_ID/okr-api:latest
       - .
@@ -22,7 +22,7 @@ steps:
       - --build-arg
       - NEXT_PUBLIC_API_URL=https://api-${_SERVICE_SUFFIX}.run.app
       - -t
-      - gcr.io/$PROJECT_ID/okr-web:$COMMIT_SHA
+      - gcr.io/$PROJECT_ID/okr-web:$_TAG
       - -t
       - gcr.io/$PROJECT_ID/okr-web:latest
       - .
@@ -47,7 +47,7 @@ steps:
       - run
       - deploy
       - okr-api
-      - --image=gcr.io/$PROJECT_ID/okr-api:$COMMIT_SHA
+      - --image=gcr.io/$PROJECT_ID/okr-api:$_TAG
       - --region=us-central1
       - --platform=managed
       - --allow-unauthenticated
@@ -64,7 +64,7 @@ steps:
       - run
       - deploy
       - okr-web
-      - --image=gcr.io/$PROJECT_ID/okr-web:$COMMIT_SHA
+      - --image=gcr.io/$PROJECT_ID/okr-web:$_TAG
       - --region=us-central1
       - --platform=managed
       - --allow-unauthenticated
@@ -72,11 +72,12 @@ steps:
       - --set-env-vars=NODE_ENV=production,PORT=8080
 
 images:
-  - gcr.io/$PROJECT_ID/okr-api:$COMMIT_SHA
-  - gcr.io/$PROJECT_ID/okr-web:$COMMIT_SHA
+  - gcr.io/$PROJECT_ID/okr-api:$_TAG
+  - gcr.io/$PROJECT_ID/okr-web:$_TAG
 
 substitutions:
   _SERVICE_SUFFIX: prod
+  _TAG: latest
 
 options:
   logging: CLOUD_LOGGING_ONLY

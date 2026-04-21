@@ -52,8 +52,8 @@ async function sendSlackNotification(payload: NotificationPayload): Promise<void
     return sendGmailNotification(payload)
   }
 
-  const { WebClient } = await import('@slack/bolt')
-  const slack = new (WebClient as any)(process.env['SLACK_BOT_TOKEN'])
+  const { WebClient } = await import('@slack/web-api')
+  const slack = new WebClient(process.env['SLACK_BOT_TOKEN'])
 
   const blocks = buildSlackBlocks(payload)
   await slack.chat.postMessage({
@@ -81,7 +81,7 @@ async function sendGmailNotification(payload: NotificationPayload): Promise<void
     credentials: keyJson,
     scopes: ['https://www.googleapis.com/auth/gmail.send'],
     subject: `noreply@${process.env['GOOGLE_WORKSPACE_DOMAIN']}`,
-  })
+  } as any)
   const accessToken = await auth.getAccessToken()
 
   const transport = createTransport({
@@ -168,7 +168,7 @@ export async function sendPasswordResetEmail(
     credentials: keyJson,
     scopes: ['https://www.googleapis.com/auth/gmail.send'],
     subject: `noreply@${process.env['GOOGLE_WORKSPACE_DOMAIN']}`,
-  })
+  } as any)
   const accessToken = await auth.getAccessToken()
 
   const transport = createTransport({

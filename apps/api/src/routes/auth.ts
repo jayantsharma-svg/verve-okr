@@ -58,10 +58,10 @@ router.post('/google/token', async (req: Request, res: Response, next) => {
     const { idToken } = req.body as { idToken?: string }
     if (!idToken) throw new AppError('INVALID_REQUEST', 'Missing idToken', 400)
 
-    const ticket = await oauthClient.verifyIdToken({
+    const ticket = await (oauthClient.verifyIdToken({
       idToken,
-      audience: process.env['GOOGLE_CLIENT_ID'],
-    })
+      audience: process.env['GOOGLE_CLIENT_ID']!,
+    }) as Promise<any>)
     const googlePayload = ticket.getPayload()
     if (!googlePayload) throw new AppError('AUTH_FAILED', 'Failed to verify Google token', 401)
 
@@ -125,10 +125,10 @@ router.get('/google/callback', async (req: Request, res: Response, next) => {
     const { tokens } = await oauthClient.getToken(code)
     oauthClient.setCredentials(tokens)
 
-    const ticket = await oauthClient.verifyIdToken({
+    const ticket = await (oauthClient.verifyIdToken({
       idToken: tokens.id_token!,
-      audience: process.env['GOOGLE_CLIENT_ID'],
-    })
+      audience: process.env['GOOGLE_CLIENT_ID']!,
+    }) as Promise<any>)
     const googlePayload = ticket.getPayload()
     if (!googlePayload) throw new AppError('AUTH_FAILED', 'Failed to verify Google token', 401)
 

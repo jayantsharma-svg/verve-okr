@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(gcloud --version)",
-      "Bash(brew install *)"
+      "Bash(brew install *)",
+      "Bash(npm install *)"
     ]
   }
 }

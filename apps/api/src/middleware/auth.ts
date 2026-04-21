@@ -63,13 +63,13 @@ export function requireMinRole(minRole: UserRole) {
 
 export function signAccessToken(payload: Omit<AuthTokenPayload, 'iat' | 'exp'>): string {
   return jwt.sign(payload, JWT_SECRET, {
-    expiresIn: process.env['JWT_EXPIRES_IN'] ?? '15m',
+    expiresIn: (process.env['JWT_EXPIRES_IN'] ?? '15m') as string,
   })
 }
 
 export function signRefreshToken(userId: string): string {
   return jwt.sign({ sub: userId, type: 'refresh' }, JWT_SECRET, {
-    expiresIn: process.env['REFRESH_TOKEN_EXPIRES_IN'] ?? '7d',
+    expiresIn: (process.env['REFRESH_TOKEN_EXPIRES_IN'] ?? '7d') as string,
   })
 }
 
