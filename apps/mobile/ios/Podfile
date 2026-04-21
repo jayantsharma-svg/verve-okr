@@ -1,0 +1,99 @@
+# Set by expo-router. This enables Fabric-only features from react-native-screens
+ENV['RNS_GAMMA_ENABLED'] ||= '1'
+require File.join(File.dirname(`node --print "require.resolve('expo/package.json')"`), "scripts/autolinking")
+require File.join(File.dirname(`node --print "require.resolve('react-native/package.json')"`), "scripts/react_native_pods")
+
+require 'json'
+podfile_properties = JSON.parse(File.read(File.join(__dir__, 'Podfile.properties.json'))) rescue {}
+
+def ccache_enabled?(podfile_properties)
+  # Environment variable takes precedence
+  return ENV['USE_CCACHE'] == '1' if ENV['USE_CCACHE']
+
+  # Fall back to Podfile properties
+  podfile_properties['apple.ccacheEnabled'] == 'true'
+end
+
+ENV['EX_DEV_CLIENT_NETWORK_INSPECTOR'] ||= podfile_properties['EX_DEV_CLIENT_NETWORK_INSPECTOR']
+ENV['RCT_USE_RN_DEP'] ||= '1' if podfile_properties['ios.buildReactNativeFromSource'] != 'true'
+ENV['RCT_USE_PREBUILT_RNCORE'] ||= '1' if podfile_properties['ios.buildReactNativeFromSource'] != 'true'
+ENV['RCT_HERMES_V1_ENABLED'] ||= '1' if podfile_properties['expo.useHermesV1'] == 'true'
+platform :ios, podfile_properties['ios.deploymentTarget'] || '15.1'
+
+prepare_react_native_project!
+
+target 'OKRTool' do
+  use_expo_modules!
+
+  if ENV['EXPO_USE_COMMUNITY_AUTOLINKING'] == '1'
+    config_command = ['node', '-e', "process.argv=['', '', 'config'];require('@react-native-community/cli').run()"];
+  else
+    config_command = [
+      'node',
+      '--no-warnings',
+      '--eval',
+      'require(\'expo/bin/autolinking\')',
+      'expo-modules-autolinking',
+      'react-native-config',
+      '--json',
+      '--platform',
+      'ios'
+    ]
+  end
+
+  config = use_native_modules!(config_command)
+
+  use_frameworks! :linkage => podfile_properties['ios.useFrameworks'].to_sym if podfile_properties['ios.useFrameworks']
+  use_frameworks! :linkage => ENV['USE_FRAMEWORKS'].to_sym if ENV['USE_FRAMEWORKS']
+
+  use_react_native!(
+    :path => config[:reactNativePath],
+    :hermes_enabled => podfile_properties['expo.jsEngine'] == nil || podfile_properties['expo.jsEngine'] == 'hermes',
+    # An absolute path to your application root.
+    :app_path => "#{Pod::Config.instance.installation_root}/..",
+    :privacy_file_aggregation_enabled => podfile_properties['apple.privacyManifestAggregationEnabled'] != 'false',
+  )
+
+  post_install do |installer|
+    react_native_post_install(
+      installer,
+      config[:reactNativePath],
+      :mac_catalyst_enabled => false,
+      :ccache_enabled => ccache_enabled?(podfile_properties),
+    )
+
+    # ── Fix: fmt 11.x uses FMT_STRING (consteval) which breaks because the
+    # xcconfig-save step in react_native_post_install uses an unquoted `find`
+    # command that silently fails on paths with spaces ("Claude Code Try").
+    # The xcconfig files are never updated on disk, so Clang compiles fmt with
+    # C++17 where consteval is unavailable.
+    # Workaround: patch format-inl.h directly to drop the FMT_STRING wrapper —
+    # fmt::format_to accepts plain string literals identically at runtime.
+    fmt_inl = "#{installer.sandbox.root}/fmt/include/fmt/format-inl.h"
+    if File.exist?(fmt_inl)
+      File.chmod(0644, fmt_inl)
+      content = File.read(fmt_inl)
+      patched = content
+        .gsub('fmt::format_to(it, FMT_STRING("{}{}"), message, SEP)',
+              'fmt::format_to(it, "{}{}", message, SEP)')
+        .gsub('fmt::format_to(it, FMT_STRING("{}{}"), ERROR_STR, error_code)',
+              'fmt::format_to(it, "{}{}", ERROR_STR, error_code)')
+        .gsub('out = fmt::format_to(out, FMT_STRING("{:x}"), value)',
+              'out = fmt::format_to(out, "{:x}", value)')
+        .gsub('out = fmt::format_to(out, FMT_STRING("{:08x}"), value)',
+              'out = fmt::format_to(out, "{:08x}", value)')
+        .gsub('out = fmt::format_to(out, FMT_STRING("p{}"),',
+              'out = fmt::format_to(out, "p{}",')
+        .gsub('FMT_THROW(system_error(errno, FMT_STRING("cannot write to file")))',
+              'FMT_THROW(system_error(errno, "cannot write to file"))')
+        .gsub('FMT_THROW(system_error(errno, FMT_STRING("getc failed")))',
+              'FMT_THROW(system_error(errno, "getc failed"))')
+        .gsub('FMT_THROW(system_error(errno, FMT_STRING("ungetc failed")))',
+              'FMT_THROW(system_error(errno, "ungetc failed"))')
+      if patched != content
+        File.write(fmt_inl, patched)
+        Pod::UI.puts("[Fix] Patched fmt/format-inl.h: replaced FMT_STRING with plain literals")
+      end
+    end
+  end
+end

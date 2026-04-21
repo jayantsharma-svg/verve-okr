@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gcloud --version)",
+      "Bash(brew install *)"
+    ]
+  }
+}

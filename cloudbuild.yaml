@@ -1,0 +1,82 @@
+steps:
+  # ── Build API image ─────────────────────────────────────────────────────────
+  - name: 'gcr.io/cloud-builders/docker'
+    id: build-api
+    args:
+      - build
+      - -f
+      - apps/api/Dockerfile
+      - -t
+      - gcr.io/$PROJECT_ID/okr-api:$COMMIT_SHA
+      - -t
+      - gcr.io/$PROJECT_ID/okr-api:latest
+      - .
+
+  # ── Build Web image ──────────────────────────────────────────────────────────
+  - name: 'gcr.io/cloud-builders/docker'
+    id: build-web
+    args:
+      - build
+      - -f
+      - apps/web/Dockerfile
+      - --build-arg
+      - NEXT_PUBLIC_API_URL=https://api-${_SERVICE_SUFFIX}.run.app
+      - -t
+      - gcr.io/$PROJECT_ID/okr-web:$COMMIT_SHA
+      - -t
+      - gcr.io/$PROJECT_ID/okr-web:latest
+      - .
+
+  # ── Push images ──────────────────────────────────────────────────────────────
+  - name: 'gcr.io/cloud-builders/docker'
+    id: push-api
+    waitFor: ['build-api']
+    args: ['push', '--all-tags', 'gcr.io/$PROJECT_ID/okr-api']
+
+  - name: 'gcr.io/cloud-builders/docker'
+    id: push-web
+    waitFor: ['build-web']
+    args: ['push', '--all-tags', 'gcr.io/$PROJECT_ID/okr-web']
+
+  # ── Deploy API to Cloud Run ──────────────────────────────────────────────────
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: deploy-api
+    waitFor: ['push-api']
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - okr-api
+      - --image=gcr.io/$PROJECT_ID/okr-api:$COMMIT_SHA
+      - --region=us-central1
+      - --platform=managed
+      - --allow-unauthenticated
+      - --port=8080
+      - --set-secrets=DATABASE_URL=DATABASE_URL:latest,JWT_SECRET=JWT_SECRET:latest,GOOGLE_CLIENT_ID=GOOGLE_CLIENT_ID:latest,GOOGLE_CLIENT_SECRET=GOOGLE_CLIENT_SECRET:latest,GOOGLE_SERVICE_ACCOUNT_KEY_BASE64=GOOGLE_SERVICE_ACCOUNT_KEY_BASE64:latest,ANTHROPIC_API_KEY=ANTHROPIC_API_KEY:latest,INTERNAL_TASKS_SECRET=INTERNAL_TASKS_SECRET:latest
+      - --set-env-vars=NODE_ENV=production,PORT=8080,GOOGLE_WORKSPACE_DOMAIN=capillarytech.com,GOOGLE_SERVICE_ACCOUNT_EMAIL=verve-backend@verve.iam.gserviceaccount.com,FRONTEND_URL=https://okr-web-${_SERVICE_SUFFIX}.run.app,API_URL=https://api-${_SERVICE_SUFFIX}.run.app,INTERNAL_API_URL=https://api-${_SERVICE_SUFFIX}.run.app,GCP_PROJECT_ID=$PROJECT_ID,GCP_TASKS_QUEUE_NAME=Verve-jobs,GCP_TASKS_LOCATION=us-central1,GCS_BUCKET_NAME=okr-tool-files,GCS_PROJECT_ID=$PROJECT_ID
+
+  # ── Deploy Web to Cloud Run ──────────────────────────────────────────────────
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: deploy-web
+    waitFor: ['push-web']
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - okr-web
+      - --image=gcr.io/$PROJECT_ID/okr-web:$COMMIT_SHA
+      - --region=us-central1
+      - --platform=managed
+      - --allow-unauthenticated
+      - --port=8080
+      - --set-env-vars=NODE_ENV=production,PORT=8080
+
+images:
+  - gcr.io/$PROJECT_ID/okr-api:$COMMIT_SHA
+  - gcr.io/$PROJECT_ID/okr-web:$COMMIT_SHA
+
+substitutions:
+  _SERVICE_SUFFIX: prod
+
+options:
+  logging: CLOUD_LOGGING_ONLY
