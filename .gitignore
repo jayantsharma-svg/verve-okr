@@ -12,3 +12,5 @@ apps/api/.env
 apps/web/.env
 apps/mobile/.env
 *.env
+apps/api/okr-tool.env
+verve-494008-cb4b7bf7b998.json
