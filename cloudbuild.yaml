@@ -4,6 +4,7 @@ steps:
     id: build-api
     args:
       - build
+      - --no-cache
       - -f
       - apps/api/Dockerfile
       - -t
@@ -17,6 +18,7 @@ steps:
     id: build-web
     args:
       - build
+      - --no-cache
       - -f
       - apps/web/Dockerfile
       - --build-arg
