@@ -78,7 +78,6 @@ images:
   - gcr.io/$PROJECT_ID/okr-web:$_TAG
 
 substitutions:
-  _SERVICE_SUFFIX: prod
   _TAG: latest
 
 options:
