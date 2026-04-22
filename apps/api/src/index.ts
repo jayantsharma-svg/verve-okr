@@ -27,6 +27,9 @@ import { runScheduledEmailScrapes } from './workers/emailScrape.js'
 const app = express()
 const PORT = parseInt(process.env['PORT'] ?? '3001', 10)
 
+// Trust Cloud Run / load balancer proxy
+app.set('trust proxy', 1)
+
 // ─── Security & parsing ───────────────────────────────────────────────────────
 app.use(camelCaseResponse)
 app.use(helmet())
