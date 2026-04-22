@@ -38,7 +38,7 @@ COPY --from=builder /app/packages/core/dist ./packages/core/dist
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
 
 # Copy DB schema and migrations (needed at runtime)
-COPY apps/api/src/db/schema.sql ./apps/api/src/db/schema.sql
+COPY apps/api/src/db/schema.sql ./apps/api/dist/db/schema.sql
 
 EXPOSE 8080
 
