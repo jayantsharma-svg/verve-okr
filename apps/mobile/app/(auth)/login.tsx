@@ -65,9 +65,9 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
-      {/* Capillary signature gradient strip — 4 color stops rendered as segments */}
+      {/* Verve gradient strip */}
       <View style={styles.brandStrip} pointerEvents="none">
-        {(['#2FAA4E', '#1CA68F', '#1E90C7', '#1E6BBF'] as const).map((c, i) => (
+        {([colors.primary, colors.primaryMid, colors.primaryGlow] as const).map((c, i) => (
           <View key={i} style={[styles.brandStripSegment, { backgroundColor: c }]} />
         ))}
       </View>

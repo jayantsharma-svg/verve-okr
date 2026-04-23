@@ -79,7 +79,7 @@ function StatCard({
   label: string; value: number; icon: React.ReactNode; color: 'blue' | 'green' | 'amber' | 'red'
 }) {
   const colorMap = {
-    blue:  { icon: 'bg-cap-blue-l text-cap-blue', bar: 'bg-cap-blue' },
+    blue:  { icon: 'bg-verve-l text-verve', bar: 'bg-verve' },
     green: { icon: 'bg-cap-green-l text-cap-green', bar: 'bg-cap-green' },
     amber: { icon: 'bg-cap-amber-l text-cap-amber', bar: 'bg-cap-amber' },
     red:   { icon: 'bg-cap-red-l text-cap-red',   bar: 'bg-cap-red' },
@@ -111,11 +111,11 @@ function ObjectiveCard({ objective }: { objective: Objective }) {
   return (
     <a
       href={`/objectives/${objective.id}`}
-      className="block bg-white rounded-xl border border-ink-100 p-5 hover:border-cap-blue hover:shadow-cap-md transition-all group"
+      className="block bg-white rounded-xl border border-ink-100 p-5 hover:border-verve hover:shadow-cap-md transition-all group"
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
-          <h3 className="font-bold text-ink-900 truncate group-hover:text-cap-blue transition-colors">
+          <h3 className="font-bold text-ink-900 truncate group-hover:text-verve transition-colors">
             {objective.title}
           </h3>
           <p className="text-xs text-ink-400 mt-0.5 capitalize font-medium">
@@ -162,7 +162,7 @@ function EmptyState() {
       <p className="text-sm text-ink-400 mt-1">Create your first objective to get started.</p>
       <a
         href="/objectives/new"
-        className="mt-4 inline-block bg-cap-blue text-white text-sm font-semibold px-5 py-2.5 rounded-lg hover:bg-cap-blue-d transition-colors shadow-cap-sm"
+        className="mt-4 inline-block bg-verve text-white text-sm font-semibold px-5 py-2.5 rounded-lg hover:bg-verve-d transition-colors shadow-cap-sm"
       >
         Create OKR
       </a>

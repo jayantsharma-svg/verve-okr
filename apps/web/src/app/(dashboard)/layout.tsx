@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
+import { VerveLogo } from '@/components/VerveLogo'
 import {
   LayoutDashboard, Target, CheckCircle, Users,
   Settings, Download, BarChart3, LogOut, Upload, Mail, Calendar, Sheet,
@@ -38,13 +39,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* Brand */}
         <div className="flex items-center gap-3 px-5 py-4 border-b border-ink-100">
-          <div className="w-8 h-8 bg-cap-blue rounded-lg flex items-center justify-center shadow-cap-xs">
-            <span className="text-white font-extrabold text-sm italic">V</span>
-          </div>
-          <div>
-            <span className="font-extrabold text-ink-900 text-sm tracking-tight">Verve</span>
-            <span className="block text-[10px] text-ink-400 font-medium leading-none mt-0.5">by Capillary</span>
-          </div>
+          <VerveLogo size={28} showWordmark={true} />
         </div>
 
         {/* Navigation */}
@@ -58,11 +53,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 className={cn(
                   'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors',
                   active
-                    ? 'bg-cap-blue-l text-cap-blue'
+                    ? 'bg-verve-l text-verve'
                     : 'text-ink-600 hover:bg-ink-50 hover:text-ink-900',
                 )}
               >
-                <Icon size={16} className={active ? 'text-cap-blue' : 'text-ink-400'} />
+                <Icon size={16} className={active ? 'text-verve' : 'text-ink-400'} />
                 {label}
               </Link>
             )

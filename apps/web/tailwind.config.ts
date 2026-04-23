@@ -24,32 +24,38 @@ const config: Config = {
           DEFAULT: 'hsl(var(--muted))',
           foreground: 'hsl(var(--muted-foreground))',
         },
+
+        // Ink scale (slate-based)
         ink: {
-          900: '#091E42',
-          800: '#1C2B4A',
-          700: '#344563',
-          600: '#5E6C84',
-          500: '#7A869A',
-          400: '#A5ADBA',
-          300: '#C1C7D0',
-          200: '#DFE1E6',
-          100: '#EBECF0',
-          50:  '#F4F5F7',
+          900: '#0F172A',
+          800: '#1E293B',
+          700: '#334155',
+          600: '#475569',
+          500: '#64748B',
+          400: '#94A3B8',
+          300: '#CBD5E1',
+          200: '#E2E8F0',
+          100: '#F1F5F9',
+          50:  '#F8FAFC',
           0:   '#FFFFFF',
         },
-        'cap-blue':    '#1E90D2',
-        'cap-blue-d':  '#1478B3',
-        'cap-blue-l':  '#E3F2FB',
-        'cap-green':   '#2E8B47',
-        'cap-green-l': '#E3F1E7',
-        'cap-amber':   '#F2A13B',
-        'cap-amber-l': '#FEF4E4',
-        'cap-red':     '#E74F3C',
-        'cap-red-l':   '#FEF2F2',
-        'cap-purple':  '#6B4B9E',
-        'cap-purple-l':'#F0EBFA',
-        'cap-teal':    '#2BA39B',
-        'cap-teal-l':  '#E4F6F5',
+
+        // Verve brand
+        'verve':       '#0F766E',
+        'verve-mid':   '#14B8A6',
+        'verve-glow':  '#2DD4BF',
+        'verve-d':     '#0D5F58',  // darker shade for hover
+        'verve-l':     '#ECFDF5',  // light tint bg
+        'verve-l2':    '#F0FDFA',  // very light tint
+        'spark':       '#FDE68A',  // summit spark
+
+        // Semantic
+        'cap-green':    '#059669',
+        'cap-green-l':  '#ECFDF5',
+        'cap-amber':    '#D97706',
+        'cap-amber-l':  '#FFFBEB',
+        'cap-red':      '#DC2626',
+        'cap-red-l':    '#FEF2F2',
       },
       borderRadius: {
         lg: 'var(--radius)',
@@ -57,10 +63,10 @@ const config: Config = {
         sm: 'calc(var(--radius) - 4px)',
       },
       boxShadow: {
-        'cap-xs': '0 1px 2px rgba(9,30,66,0.06)',
-        'cap-sm': '0 2px 4px rgba(9,30,66,0.08), 0 1px 2px rgba(9,30,66,0.04)',
-        'cap-md': '0 6px 16px rgba(9,30,66,0.10), 0 2px 4px rgba(9,30,66,0.06)',
-        'cap-lg': '0 16px 32px rgba(9,30,66,0.12), 0 4px 8px rgba(9,30,66,0.06)',
+        'cap-xs': '0 1px 2px rgba(15,23,42,0.06)',
+        'cap-sm': '0 2px 4px rgba(15,23,42,0.08), 0 1px 2px rgba(15,23,42,0.04)',
+        'cap-md': '0 6px 16px rgba(15,23,42,0.10), 0 2px 4px rgba(15,23,42,0.06)',
+        'cap-lg': '0 16px 32px rgba(15,23,42,0.12), 0 4px 8px rgba(15,23,42,0.06)',
       },
     },
   },

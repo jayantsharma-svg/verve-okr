@@ -357,9 +357,9 @@ export default function OKRsScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      {/* Capillary signature gradient strip */}
+      {/* Verve gradient strip */}
       <View style={styles.brandStrip} pointerEvents="none">
-        {(['#2FAA4E', '#1CA68F', '#1E90C7', '#1E6BBF'] as const).map((c, i) => (
+        {(['#0F766E', '#14B8A6', '#2DD4BF'] as const).map((c, i) => (
           <View key={i} style={[styles.brandStripSegment, { backgroundColor: c }]} />
         ))}
       </View>

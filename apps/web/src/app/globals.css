@@ -4,24 +4,23 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222 73% 15%;        /* #091E42 navy */
-    --primary: 204 74% 47%;           /* #1E90D2 CDP blue */
+    --background: 210 40% 98%;   /* #F8FAFC slate-50 */
+    --foreground: 222 47% 11%;   /* #0F172A slate-900 */
+    --border: 214 32% 91%;       /* #E2E8F0 slate-200 */
+    --radius: 0.75rem;
+    --primary: 174 83% 26%;      /* #0F766E teal-700 */
     --primary-foreground: 0 0% 100%;
-    --muted: 220 11% 96%;             /* #F4F5F7 */
-    --muted-foreground: 219 17% 44%;  /* #5E6C84 */
-    --border: 220 13% 88%;            /* #DFE1E6 */
-    --ring: 204 74% 47%;
-    --radius: 0.5rem;
+    --muted: 215 16% 47%;        /* #64748B slate-500 */
+    --muted-foreground: 215 16% 47%;
   }
 }
 
 * { @apply border-border; }
 body { @apply bg-background text-foreground; font-family: var(--font-sans, 'Nunito', sans-serif); }
 
-/* Capillary signature gradient strip */
+/* Verve signature gradient strip */
 .cap-strip {
-  background: linear-gradient(90deg, #2FAA4E 0%, #1CA68F 35%, #1E90C7 70%, #1E6BBF 100%);
+  background: linear-gradient(90deg, #0F766E 0%, #14B8A6 50%, #2DD4BF 100%);
 }
 
 /* JetBrains Mono for metric numbers */
