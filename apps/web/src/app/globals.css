@@ -5,16 +5,27 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --border: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    --foreground: 222 73% 15%;        /* #091E42 navy */
+    --primary: 204 74% 47%;           /* #1E90D2 CDP blue */
+    --primary-foreground: 0 0% 100%;
+    --muted: 220 11% 96%;             /* #F4F5F7 */
+    --muted-foreground: 219 17% 44%;  /* #5E6C84 */
+    --border: 220 13% 88%;            /* #DFE1E6 */
+    --ring: 204 74% 47%;
     --radius: 0.5rem;
   }
 }
 
 * { @apply border-border; }
-body { @apply bg-background text-foreground; }
+body { @apply bg-background text-foreground; font-family: var(--font-sans, 'Nunito', sans-serif); }
+
+/* Capillary signature gradient strip */
+.cap-strip {
+  background: linear-gradient(90deg, #2FAA4E 0%, #1CA68F 35%, #1E90C7 70%, #1E6BBF 100%);
+}
+
+/* JetBrains Mono for metric numbers */
+.font-metric {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-variant-numeric: tabular-nums;
+}

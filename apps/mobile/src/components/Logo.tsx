@@ -1,5 +1,5 @@
 /**
- * Verve logo mark — a bold italic "V" in a deep-indigo rounded square.
+ * Verve logo mark — a bold italic "V" in a CDP-blue rounded square.
  * Used on the login/splash screens and wherever a brand mark is needed.
  */
 import { View, Text, StyleSheet } from 'react-native'
@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   mark: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.primary,  // #1E90D2 CDP blue
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',

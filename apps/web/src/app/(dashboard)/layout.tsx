@@ -30,56 +30,65 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-ink-50">
       {/* Sidebar */}
-      <aside className="w-60 bg-white border-r border-gray-100 flex flex-col">
+      <aside className="w-60 bg-white shadow-cap-sm flex flex-col">
+        {/* Gradient strip accent at top */}
+        <div className="h-1 cap-strip flex-shrink-0" />
+
         {/* Brand */}
-        <div className="flex items-center gap-3 px-5 py-5 border-b border-gray-100">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-sm">V</span>
+        <div className="flex items-center gap-3 px-5 py-4 border-b border-ink-100">
+          <div className="w-8 h-8 bg-cap-blue rounded-lg flex items-center justify-center shadow-cap-xs">
+            <span className="text-white font-extrabold text-sm italic">V</span>
           </div>
-          <span className="font-semibold text-gray-900">Verve</span>
+          <div>
+            <span className="font-extrabold text-ink-900 text-sm tracking-tight">Verve</span>
+            <span className="block text-[10px] text-ink-400 font-medium leading-none mt-0.5">by Capillary</span>
+          </div>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-3 py-4 space-y-1">
-          {nav.map(({ href, label, icon: Icon }) => (
-            <Link
-              key={href}
-              href={href}
-              className={cn(
-                'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
-                pathname === href || pathname.startsWith(href + '/')
-                  ? 'bg-blue-50 text-blue-700'
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
-              )}
-            >
-              <Icon size={17} />
-              {label}
-            </Link>
-          ))}
+        <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+          {nav.map(({ href, label, icon: Icon }) => {
+            const active = pathname === href || pathname.startsWith(href + '/')
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={cn(
+                  'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors',
+                  active
+                    ? 'bg-cap-blue-l text-cap-blue'
+                    : 'text-ink-600 hover:bg-ink-50 hover:text-ink-900',
+                )}
+              >
+                <Icon size={16} className={active ? 'text-cap-blue' : 'text-ink-400'} />
+                {label}
+              </Link>
+            )
+          })}
         </nav>
 
         {/* Bottom actions */}
-        <div className="px-3 py-4 border-t border-gray-100 space-y-1">
+        <div className="px-3 py-4 border-t border-ink-100 space-y-0.5">
           <a
             href="/api/export/okrs"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-ink-600 hover:bg-ink-50 hover:text-ink-900 transition-colors"
           >
-            <Download size={17} />
+            <Download size={16} className="text-ink-400" />
             Export OKRs
           </a>
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-ink-600 hover:bg-ink-50 hover:text-ink-900 transition-colors"
           >
-            <LogOut size={17} />
+            <LogOut size={16} className="text-ink-400" />
             Sign out
           </button>
         </div>
       </aside>
 
-      {/* Main content */}
+      {/* Main */}
       <main className="flex-1 overflow-y-auto">
         {children}
       </main>
