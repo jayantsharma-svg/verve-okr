@@ -1,52 +1,57 @@
+import { useState } from 'react'
 import { Linking } from 'react-native'
-import { api, saveToken } from './api'
+import { saveToken } from './api'
 
 const API_URL = process.env['EXPO_PUBLIC_API_URL'] ?? 'http://localhost:3001'
-const GOOGLE_CLIENT_ID = process.env['EXPO_PUBLIC_GOOGLE_CLIENT_ID'] ?? ''
 
-// Deep link the backend should redirect back to after Google OAuth
-const MOBILE_REDIRECT_URI = 'okrtool://auth/google-callback'
+// Deep link the backend should redirect back to after Google OAuth.
+// Must match the app scheme defined in app.json ("scheme": "verve").
+const MOBILE_REDIRECT_URI = 'verve://auth/google-callback'
 
 interface UseGoogleSignInResult {
   signIn: () => Promise<void>
-  /** True if Google OAuth is configured (real client ID present) */
+  loading: boolean
+  /** Always true — Google SSO is always available via the backend */
   enabled: boolean
 }
 
 /**
- * Opens the backend's Google OAuth URL in the system browser (Safari).
+ * Opens the backend's Google OAuth URL in the system browser (Safari/Chrome).
  * After the user approves, the backend redirects to
- *   okrtool://auth/google-callback?token=<jwt>
+ *   verve://auth/google-callback?token=<jwt>
  * which is caught by the Linking listener in app/_layout.tsx.
  */
-export function useGoogleSignIn(_opts: {
+export function useGoogleSignIn(opts: {
   onSuccess: () => void
   onError: (message: string) => void
 }): UseGoogleSignInResult {
-  // Hide the button if no real client ID is configured
-  const isRealClientId =
-    Boolean(GOOGLE_CLIENT_ID) &&
-    !GOOGLE_CLIENT_ID.startsWith('your-') &&
-    GOOGLE_CLIENT_ID.includes('.apps.googleusercontent.com')
+  const [loading, setLoading] = useState(false)
 
   async function signIn() {
-    const redirectUri = encodeURIComponent(MOBILE_REDIRECT_URI)
-    const url = `${API_URL}/auth/google?mobile_redirect=${redirectUri}`
-    const canOpen = await Linking.canOpenURL(url)
-    if (!canOpen) {
-      _opts.onError('Unable to open the sign-in page. Please try again.')
-      return
+    setLoading(true)
+    try {
+      const redirectUri = encodeURIComponent(MOBILE_REDIRECT_URI)
+      const url = `${API_URL}/auth/google?mobile_redirect=${redirectUri}`
+      const canOpen = await Linking.canOpenURL(url)
+      if (!canOpen) {
+        opts.onError('Unable to open the sign-in page. Please try again.')
+        return
+      }
+      await Linking.openURL(url)
+      // Outcome is handled by the Linking listener in _layout.tsx
+    } catch {
+      opts.onError('Failed to open sign-in page. Please try again.')
+    } finally {
+      setLoading(false)
     }
-    await Linking.openURL(url)
-    // Outcome is handled by the Linking listener in _layout.tsx
   }
 
-  return { signIn, enabled: isRealClientId }
+  return { signIn, loading, enabled: true }
 }
 
 /**
  * Called by the root layout's Linking handler when the deep link
- * okrtool://auth/google-callback?token=<jwt> is received.
+ * verve://auth/google-callback?token=<jwt> is received.
  */
 export async function handleGoogleCallbackUrl(
   url: string,

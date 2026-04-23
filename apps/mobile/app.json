@@ -16,7 +16,9 @@
       "bundleIdentifier": "com.capillary.verve",
       "infoPlist": {
         "LSApplicationQueriesSchemes": [
-          "verve"
+          "verve",
+          "https",
+          "http"
         ]
       }
     },

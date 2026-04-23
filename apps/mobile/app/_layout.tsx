@@ -26,7 +26,7 @@ export default function RootLayout() {
     })
   }, [])
 
-  // Handle Google OAuth deep-link callback: okrtool://auth/google-callback?token=...
+  // Handle Google OAuth deep-link callback: verve://auth/google-callback?token=...
   useEffect(() => {
     function handleUrl(event: { url: string }) {
       const url = event.url
