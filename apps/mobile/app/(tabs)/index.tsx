@@ -15,6 +15,7 @@ import { colors, spacing, radius, font, shadow } from '@/lib/theme'
 import Card from '@/components/Card'
 import ProgressBar from '@/components/ProgressBar'
 import ConfidenceBadge from '@/components/ConfidenceBadge'
+import Logo from '@/components/Logo'
 
 function calcKrPct(kr: any): number {
   if (kr.targetValue === kr.startValue) return 0
@@ -105,9 +106,7 @@ export default function DashboardScreen() {
           <Text style={styles.greetingName}>{firstName}</Text>
         </View>
         {/* Mini logo mark */}
-        <View style={styles.miniMark}>
-          <Text style={styles.miniMarkLetter}>V</Text>
-        </View>
+        <Logo size={36} showWordmark={false} />
       </View>
 
       <ScrollView
@@ -296,22 +295,6 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: colors.gray900,
     letterSpacing: -0.8,
-  },
-  miniMark: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...shadow.md,
-  },
-  miniMarkLetter: {
-    fontSize: 20,
-    fontWeight: '900',
-    fontStyle: 'italic',
-    color: colors.white,
-    letterSpacing: -1,
   },
 
   // ── Scroll ───────────────────────────────────────────────────────────────
