@@ -20,4 +20,20 @@ config.resolver.nodeModulesPaths = [
 // ─── Ensure symlinked workspace packages are followed ─────────────────────────
 config.resolver.disableHierarchicalLookup = false
 
+// ─── Fix: EXPO_ROUTER_APP_ROOT not inlined in EAS Build cloud workers ─────────
+// expo-router's _ctx.js uses `require.context(process.env.EXPO_ROUTER_APP_ROOT, ...)`
+// which requires a static string. We redirect to a local file with a hardcoded path.
+const customCtxPath = path.resolve(projectRoot, '_expo-router-ctx.js')
+const originalResolveRequest = config.resolver.resolveRequest
+
+config.resolver.resolveRequest = (context, moduleName, platform) => {
+  if (moduleName === 'expo-router/_ctx') {
+    return { filePath: customCtxPath, type: 'sourceFile' }
+  }
+  if (originalResolveRequest) {
+    return originalResolveRequest(context, moduleName, platform)
+  }
+  return context.resolveRequest(context, moduleName, platform)
+}
+
 module.exports = config
