@@ -3,14 +3,39 @@ import { colors } from '@/lib/theme'
 
 interface ProgressBarProps {
   pct: number
+  /** Override auto-color with a specific color */
   color?: string
+  /** Bar height in dp (default 8) */
+  height?: number
 }
 
-export function ProgressBar({ pct, color = colors.primary }: ProgressBarProps) {
+/** Returns a semantic color based on completion percentage */
+function progressColor(pct: number): string {
+  if (pct >= 70) return colors.green
+  if (pct >= 40) return colors.amber
+  return colors.red
+}
+
+export function ProgressBar({ pct, color, height = 8 }: ProgressBarProps) {
   const clamped = Math.min(Math.max(pct, 0), 100)
+  const fill = color ?? progressColor(clamped)
+  const br = height / 2
+
   return (
-    <View style={styles.track}>
-      <View style={[styles.fill, { width: `${clamped}%` as `${number}%`, backgroundColor: color }]} />
+    <View style={[styles.track, { height, borderRadius: br }]}>
+      {/* Background glow track */}
+      <View
+        style={[
+          styles.fill,
+          {
+            width: `${clamped}%` as `${number}%`,
+            height,
+            borderRadius: br,
+            backgroundColor: fill,
+            opacity: clamped > 0 ? 1 : 0,
+          },
+        ]}
+      />
     </View>
   )
 }
@@ -18,6 +43,9 @@ export function ProgressBar({ pct, color = colors.primary }: ProgressBarProps) {
 export default ProgressBar
 
 const styles = StyleSheet.create({
-  track: { height: 6, backgroundColor: colors.gray200, borderRadius: 3, overflow: 'hidden' },
-  fill:  { height: 6, borderRadius: 3 },
+  track: {
+    backgroundColor: colors.gray100,
+    overflow: 'hidden',
+  },
+  fill: {},
 })

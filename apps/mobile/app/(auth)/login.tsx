@@ -15,7 +15,8 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { api, saveToken } from '@/lib/api'
 import { useGoogleSignIn } from '@/lib/useGoogleSignIn'
-import { colors, spacing, radius, font } from '@/lib/theme'
+import { colors, spacing, radius, font, shadow } from '@/lib/theme'
+import Logo from '@/components/Logo'
 
 export default function LoginScreen() {
   const router = useRouter()
@@ -62,14 +63,6 @@ export default function LoginScreen() {
     }
   }
 
-  function handleSubmit() {
-    handleSignIn(email, password)
-  }
-
-  function handleDevLogin() {
-    handleSignIn('admin@capillary.com', 'password123')
-  }
-
   return (
     <SafeAreaView style={styles.safe}>
       <KeyboardAvoidingView
@@ -79,26 +72,54 @@ export default function LoginScreen() {
         <ScrollView
           contentContainerStyle={styles.scroll}
           keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
           {/* Brand header */}
           <View style={styles.header}>
-            <View style={styles.logoCircle}>
-              <Text style={styles.logoLetter}>V</Text>
-            </View>
-            <Text style={styles.appTitle}>Verve</Text>
-            <Text style={styles.appSubtitle}>Capillary Technologies</Text>
+            <Logo size={72} showWordmark />
+            <Text style={styles.tagline}>Your goals. Your growth.</Text>
           </View>
 
           {/* Login card */}
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>Sign in to your account</Text>
+            <Text style={styles.cardTitle}>Sign in</Text>
+            <Text style={styles.cardSubtitle}>Use your Capillary account</Text>
 
+            {/* Google SSO — primary action */}
+            {google.enabled && (
+              <TouchableOpacity
+                style={[styles.googleButton, (loading || google.loading) && styles.buttonDisabled]}
+                onPress={google.signIn}
+                disabled={loading || google.loading}
+                activeOpacity={0.85}
+              >
+                {google.loading ? (
+                  <ActivityIndicator color={colors.gray700} size="small" />
+                ) : (
+                  <>
+                    <View style={styles.googleIconBox}>
+                      <Text style={styles.googleIconText}>G</Text>
+                    </View>
+                    <Text style={styles.googleButtonText}>Continue with Google</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            )}
+
+            {/* Divider */}
+            <View style={styles.dividerRow}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>or sign in with email</Text>
+              <View style={styles.dividerLine} />
+            </View>
+
+            {/* Email / password fields */}
             <View style={styles.fieldGroup}>
               <Text style={styles.label}>Email</Text>
               <TextInput
                 style={styles.input}
                 placeholder="you@capillary.com"
-                placeholderTextColor={colors.gray400}
+                placeholderTextColor={colors.gray300}
                 autoCapitalize="none"
                 autoCorrect={false}
                 keyboardType="email-address"
@@ -115,13 +136,13 @@ export default function LoginScreen() {
               <TextInput
                 style={styles.input}
                 placeholder="••••••••"
-                placeholderTextColor={colors.gray400}
+                placeholderTextColor={colors.gray300}
                 secureTextEntry
                 textContentType="password"
                 returnKeyType="done"
                 value={password}
                 onChangeText={setPassword}
-                onSubmitEditing={handleSubmit}
+                onSubmitEditing={() => handleSignIn(email, password)}
                 editable={!loading}
               />
             </View>
@@ -133,10 +154,10 @@ export default function LoginScreen() {
             ) : null}
 
             <TouchableOpacity
-              style={[styles.signInButton, loading && styles.signInButtonDisabled]}
-              onPress={handleSubmit}
+              style={[styles.signInButton, loading && styles.buttonDisabled]}
+              onPress={() => handleSignIn(email, password)}
               disabled={loading}
-              activeOpacity={0.8}
+              activeOpacity={0.85}
             >
               {loading ? (
                 <ActivityIndicator color={colors.white} size="small" />
@@ -144,47 +165,23 @@ export default function LoginScreen() {
                 <Text style={styles.signInButtonText}>Sign In</Text>
               )}
             </TouchableOpacity>
-
-            {/* Google SSO */}
-            {google.enabled && (
-              <>
-                <View style={styles.dividerRow}>
-                  <View style={styles.dividerLine} />
-                  <Text style={styles.dividerText}>or</Text>
-                  <View style={styles.dividerLine} />
-                </View>
-
-                <TouchableOpacity
-                  style={[styles.googleButton, (loading || google.loading) && styles.signInButtonDisabled]}
-                  onPress={google.signIn}
-                  disabled={loading || google.loading}
-                  activeOpacity={0.8}
-                >
-                  {google.loading ? (
-                    <ActivityIndicator color={colors.gray700} size="small" />
-                  ) : (
-                    <>
-                      <Text style={styles.googleIcon}>G</Text>
-                      <Text style={styles.googleButtonText}>Sign in with Google</Text>
-                    </>
-                  )}
-                </TouchableOpacity>
-              </>
-            )}
-
-            {__DEV__ && (
-              <TouchableOpacity
-                style={styles.devButton}
-                onPress={handleDevLogin}
-                disabled={loading}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.devButtonText}>
-                  Dev Login (admin@capillary.com)
-                </Text>
-              </TouchableOpacity>
-            )}
           </View>
+
+          {/* Dev shortcut */}
+          {__DEV__ && (
+            <TouchableOpacity
+              style={styles.devButton}
+              onPress={() => handleSignIn('admin@capillary.com', 'password123')}
+              disabled={loading}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.devButtonText}>⚡ Dev Login</Text>
+            </TouchableOpacity>
+          )}
+
+          <Text style={styles.footer}>
+            Capillary Technologies · Verve
+          </Text>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -194,163 +191,173 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: colors.gray50,
+    backgroundColor: colors.background,
   },
-  flex: {
-    flex: 1,
-  },
+  flex: { flex: 1 },
   scroll: {
     flexGrow: 1,
     justifyContent: 'center',
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.xxl,
   },
+
+  // ── Header ──────────────────────────────────────────────────────────────────
   header: {
     alignItems: 'center',
     marginBottom: spacing.xl,
   },
-  logoCircle: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.md,
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
+  tagline: {
+    marginTop: spacing.md,
+    fontSize: font.sm,
+    color: colors.gray500,
+    letterSpacing: 0.2,
   },
-  logoLetter: {
-    fontSize: 32,
-    fontWeight: '700',
-    color: colors.white,
+
+  // ── Card ────────────────────────────────────────────────────────────────────
+  card: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.xl,
+    padding: spacing.lg,
+    ...shadow.md,
   },
-  appTitle: {
-    fontSize: font.xxl,
-    fontWeight: '700',
+  cardTitle: {
+    fontSize: font.xl,
+    fontWeight: '800',
     color: colors.gray900,
     letterSpacing: -0.5,
   },
-  appSubtitle: {
+  cardSubtitle: {
     fontSize: font.sm,
     color: colors.gray500,
-    marginTop: spacing.xs,
-  },
-  card: {
-    backgroundColor: colors.white,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.gray200,
-    padding: spacing.lg,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  cardTitle: {
-    fontSize: font.md,
-    fontWeight: '600',
-    color: colors.gray900,
+    marginTop: 2,
     marginBottom: spacing.lg,
   },
+
+  // ── Google button ────────────────────────────────────────────────────────────
+  googleButton: {
+    height: 50,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: colors.gray200,
+    borderRadius: radius.md,
+    backgroundColor: colors.surface,
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+    ...shadow.sm,
+  },
+  googleIconBox: {
+    width: 22,
+    height: 22,
+    borderRadius: 4,
+    backgroundColor: '#4285F4',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  googleIconText: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: colors.white,
+    lineHeight: 18,
+  },
+  googleButtonText: {
+    fontSize: font.base,
+    fontWeight: '600',
+    color: colors.gray800,
+  },
+
+  // ── Divider ──────────────────────────────────────────────────────────────────
+  dividerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+    gap: spacing.sm,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.gray100,
+  },
+  dividerText: {
+    fontSize: font.xs,
+    color: colors.gray400,
+    fontWeight: '500',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+  },
+
+  // ── Form ─────────────────────────────────────────────────────────────────────
   fieldGroup: {
     marginBottom: spacing.md,
   },
   label: {
     fontSize: font.sm,
-    fontWeight: '500',
+    fontWeight: '600',
     color: colors.gray700,
     marginBottom: spacing.xs,
   },
   input: {
-    height: 46,
-    borderWidth: 1,
+    height: 48,
+    borderWidth: 1.5,
     borderColor: colors.gray200,
     borderRadius: radius.sm,
     paddingHorizontal: spacing.md,
     fontSize: font.base,
     color: colors.gray900,
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
   },
+
+  // ── Error ─────────────────────────────────────────────────────────────────────
   errorBox: {
     backgroundColor: colors.redLight,
     borderRadius: radius.sm,
     padding: spacing.sm,
     marginBottom: spacing.md,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.red,
   },
   errorText: {
     fontSize: font.sm,
     color: colors.red,
     lineHeight: 18,
   },
+
+  // ── Primary button ───────────────────────────────────────────────────────────
   signInButton: {
-    height: 48,
+    height: 50,
     backgroundColor: colors.primary,
-    borderRadius: radius.sm,
+    borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: spacing.sm,
+    marginTop: spacing.xs,
+    ...shadow.md,
   },
-  signInButtonDisabled: {
-    opacity: 0.6,
-  },
+  buttonDisabled: { opacity: 0.55 },
   signInButtonText: {
     fontSize: font.base,
-    fontWeight: '600',
+    fontWeight: '700',
     color: colors.white,
-    letterSpacing: 0.2,
+    letterSpacing: 0.3,
   },
+
+  // ── Dev ──────────────────────────────────────────────────────────────────────
   devButton: {
     marginTop: spacing.md,
     paddingVertical: spacing.sm,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.gray200,
-    borderRadius: radius.sm,
-    backgroundColor: colors.gray50,
   },
   devButtonText: {
     fontSize: font.sm,
-    color: colors.gray500,
-  },
-  dividerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: spacing.md,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: colors.gray200,
-  },
-  dividerText: {
-    marginHorizontal: spacing.sm,
-    fontSize: font.sm,
     color: colors.gray400,
   },
-  googleButton: {
-    height: 48,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: colors.gray300,
-    borderRadius: radius.sm,
-    backgroundColor: colors.white,
-    gap: spacing.sm,
-  },
-  googleIcon: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#4285F4',
-  },
-  googleButtonText: {
-    fontSize: font.base,
-    fontWeight: '500',
-    color: colors.gray700,
+
+  // ── Footer ───────────────────────────────────────────────────────────────────
+  footer: {
+    marginTop: spacing.xl,
+    textAlign: 'center',
+    fontSize: font.xs,
+    color: colors.gray300,
+    letterSpacing: 0.3,
   },
 })

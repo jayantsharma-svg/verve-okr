@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import {
   View,
   Text,
@@ -6,48 +6,57 @@ import {
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import { useQuery } from '@tanstack/react-query';
-import { api, clearToken } from '@/lib/api';
-import { colors, spacing, radius, font } from '@/lib/theme';
-import Card from '@/components/Card';
-import { queryClient } from '@/lib/query';
+} from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { useRouter } from 'expo-router'
+import { useQuery } from '@tanstack/react-query'
+import { api, clearToken } from '@/lib/api'
+import { colors, spacing, radius, font, shadow } from '@/lib/theme'
+import Card from '@/components/Card'
+import { queryClient } from '@/lib/query'
 
 const ROLE_STYLES: Record<string, { bg: string; text: string; label: string }> = {
-  admin: { bg: colors.violetLight, text: colors.violet, label: 'Admin' },
-  dept_lead: { bg: colors.blueLight, text: colors.blue, label: 'Dept Lead' },
+  admin:     { bg: colors.violetLight, text: colors.violet, label: 'Admin' },
+  dept_lead: { bg: colors.primaryLight, text: colors.primary, label: 'Dept Lead' },
   team_lead: { bg: colors.tealLight, text: colors.teal, label: 'Team Lead' },
-  member: { bg: colors.gray100, text: colors.gray700, label: 'Member' },
-};
+  member:    { bg: colors.gray100, text: colors.gray700, label: 'Member' },
+}
 
 const AUTH_METHOD_LABELS: Record<string, string> = {
-  google_sso: 'Google SSO',
+  google_sso:     'Google SSO',
   email_password: 'Password',
-};
+}
 
 function getInitials(name: string): string {
   return name
     .split(' ')
     .map((part) => part.charAt(0).toUpperCase())
     .slice(0, 2)
-    .join('');
+    .join('')
+}
+
+function InfoRow({ label, value, last = false }: { label: string; value: string; last?: boolean }) {
+  return (
+    <View style={[styles.infoRow, last && styles.infoRowLast]}>
+      <Text style={styles.infoLabel}>{label}</Text>
+      <Text style={styles.infoValue}>{value}</Text>
+    </View>
+  )
 }
 
 export default function ProfileScreen() {
-  const router = useRouter();
+  const router = useRouter()
 
   const { data: me, isLoading, error } = useQuery({
     queryKey: ['me'],
     queryFn: api.auth.me,
-  });
+  })
 
   const handleSignOut = async () => {
-    await clearToken();
-    queryClient.clear();
-    router.replace('/(auth)/login');
-  };
+    await clearToken()
+    queryClient.clear()
+    router.replace('/(auth)/login')
+  }
 
   if (isLoading) {
     return (
@@ -56,7 +65,7 @@ export default function ProfileScreen() {
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
       </SafeAreaView>
-    );
+    )
   }
 
   if (error || !me) {
@@ -66,18 +75,18 @@ export default function ProfileScreen() {
           <Text style={styles.errorText}>Failed to load profile.</Text>
         </View>
       </SafeAreaView>
-    );
+    )
   }
 
-  const roleStyle = ROLE_STYLES[me.role] ?? ROLE_STYLES.member;
-  const initials = getInitials(me.name ?? 'U');
-  const authLabel = AUTH_METHOD_LABELS[me.authType] ?? me.authType ?? 'Unknown';
+  const roleStyle = ROLE_STYLES[me.role] ?? ROLE_STYLES.member!
+  const initials = getInitials(me.name ?? 'U')
+  const authLabel = AUTH_METHOD_LABELS[me.authType] ?? me.authType ?? 'Unknown'
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
+      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Profile</Text>
-        <Text style={styles.headerSubtitle}>Account settings</Text>
       </View>
 
       <ScrollView
@@ -85,55 +94,30 @@ export default function ProfileScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Profile Card */}
-        <Card style={styles.cardSpacing}>
-          <View style={styles.avatarRow}>
-            <View style={styles.avatarCircle}>
-              <Text style={styles.avatarInitials}>{initials}</Text>
-            </View>
-            <View style={styles.profileInfo}>
-              <Text style={styles.profileName}>{me.name}</Text>
-              <Text style={styles.profileEmail}>{me.email}</Text>
-              {(me.department || me.team) && (
-                <Text style={styles.profileMeta}>
-                  {[me.department, me.team].filter(Boolean).join(' · ')}
-                </Text>
-              )}
-              <View style={[styles.roleBadge, { backgroundColor: roleStyle.bg }]}>
-                <Text style={[styles.roleBadgeText, { color: roleStyle.text }]}>
-                  {roleStyle.label}
-                </Text>
-              </View>
-            </View>
+        {/* ── Avatar hero ────────────────────────────────────────────── */}
+        <View style={styles.heroCard}>
+          <View style={styles.avatarCircle}>
+            <Text style={styles.avatarInitials}>{initials}</Text>
           </View>
-        </Card>
+          <Text style={styles.heroName}>{me.name}</Text>
+          <Text style={styles.heroEmail}>{me.email}</Text>
+          <View style={[styles.roleBadge, { backgroundColor: roleStyle.bg }]}>
+            <Text style={[styles.roleBadgeText, { color: roleStyle.text }]}>
+              {roleStyle.label}
+            </Text>
+          </View>
+        </View>
 
-        {/* Account Card */}
+        {/* ── Account details ─────────────────────────────────────────── */}
         <Card style={styles.cardSpacing}>
           <Text style={styles.sectionTitle}>Account</Text>
-          <View style={styles.accountRow}>
-            <Text style={styles.accountRowLabel}>Auth method</Text>
-            <Text style={styles.accountRowValue}>{authLabel}</Text>
-          </View>
-          {me.department && (
-            <View style={styles.accountRow}>
-              <Text style={styles.accountRowLabel}>Department</Text>
-              <Text style={styles.accountRowValue}>{me.department}</Text>
-            </View>
-          )}
-          {me.team && (
-            <View style={styles.accountRow}>
-              <Text style={styles.accountRowLabel}>Team</Text>
-              <Text style={styles.accountRowValue}>{me.team}</Text>
-            </View>
-          )}
-          <View style={[styles.accountRow, styles.accountRowLast]}>
-            <Text style={styles.accountRowLabel}>Role</Text>
-            <Text style={styles.accountRowValue}>{roleStyle.label}</Text>
-          </View>
+          <InfoRow label="Auth method" value={authLabel} />
+          {me.department && <InfoRow label="Department" value={me.department} />}
+          {me.team && <InfoRow label="Team" value={me.team} />}
+          <InfoRow label="Role" value={roleStyle.label} last />
         </Card>
 
-        {/* Sign Out Button */}
+        {/* ── Sign Out ────────────────────────────────────────────────── */}
         <TouchableOpacity
           style={styles.signOutButton}
           onPress={handleSignOut}
@@ -143,13 +127,13 @@ export default function ProfileScreen() {
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: colors.gray50,
+    backgroundColor: colors.background,
   },
   centered: {
     flex: 1,
@@ -162,117 +146,116 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingHorizontal: spacing.lg,
   },
+
+  // ── Header ───────────────────────────────────────────────────────────────
   header: {
     paddingHorizontal: spacing.md,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.sm,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.md,
   },
   headerTitle: {
     fontSize: font.xl,
-    fontWeight: 'bold',
+    fontWeight: '800',
     color: colors.gray900,
+    letterSpacing: -0.5,
   },
-  headerSubtitle: {
-    fontSize: font.sm,
-    color: colors.gray500,
-    marginTop: 2,
-  },
-  scroll: {
-    flex: 1,
-  },
+
+  scroll: { flex: 1 },
   scrollContent: {
     paddingHorizontal: spacing.md,
-    paddingBottom: spacing.xl + spacing.sm,
+    paddingBottom: spacing.xl + spacing.md,
   },
-  cardSpacing: {
+  cardSpacing: { marginBottom: spacing.sm },
+
+  // ── Hero card ─────────────────────────────────────────────────────────────
+  heroCard: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.xl,
+    padding: spacing.lg,
+    alignItems: 'center',
     marginBottom: spacing.sm,
-  },
-  avatarRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: spacing.md,
+    ...shadow.md,
   },
   avatarCircle: {
-    width: 60,
-    height: 60,
+    width: 72,
+    height: 72,
     borderRadius: radius.full,
     backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    flexShrink: 0,
+    marginBottom: spacing.md,
+    ...shadow.lg,
   },
   avatarInitials: {
-    fontSize: font.lg,
-    fontWeight: '700',
+    fontSize: font.xl,
+    fontWeight: '800',
     color: colors.white,
+    letterSpacing: -0.5,
   },
-  profileInfo: {
-    flex: 1,
-  },
-  profileName: {
+  heroName: {
     fontSize: font.lg,
-    fontWeight: '700',
+    fontWeight: '800',
     color: colors.gray900,
-    marginBottom: 2,
+    letterSpacing: -0.3,
+    marginBottom: 4,
   },
-  profileEmail: {
+  heroEmail: {
     fontSize: font.sm,
     color: colors.gray500,
-    marginBottom: 2,
-  },
-  profileMeta: {
-    fontSize: font.sm,
-    color: colors.gray500,
-    marginBottom: spacing.sm,
+    marginBottom: spacing.md,
   },
   roleBadge: {
-    alignSelf: 'flex-start',
     borderRadius: radius.full,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
   },
   roleBadgeText: {
     fontSize: font.sm,
-    fontWeight: '600',
-  },
-  sectionTitle: {
-    fontSize: font.base,
     fontWeight: '700',
-    color: colors.gray900,
+  },
+
+  // ── Info rows ─────────────────────────────────────────────────────────────
+  sectionTitle: {
+    fontSize: font.sm,
+    fontWeight: '700',
+    color: colors.gray500,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
     marginBottom: spacing.sm,
   },
-  accountRow: {
+  infoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: spacing.sm,
+    paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: colors.gray100,
   },
-  accountRowLast: {
+  infoRowLast: {
     borderBottomWidth: 0,
   },
-  accountRowLabel: {
+  infoLabel: {
     fontSize: font.base,
     color: colors.gray500,
   },
-  accountRowValue: {
+  infoValue: {
     fontSize: font.base,
-    fontWeight: '500',
+    fontWeight: '600',
     color: colors.gray900,
   },
+
+  // ── Sign out ──────────────────────────────────────────────────────────────
   signOutButton: {
-    backgroundColor: colors.redLight,
     borderRadius: radius.md,
     paddingVertical: spacing.md,
     alignItems: 'center',
-    marginTop: spacing.sm,
-    borderWidth: 1,
-    borderColor: colors.red,
+    backgroundColor: colors.redLight,
+    borderWidth: 1.5,
+    borderColor: colors.red + '40',
   },
   signOutButtonText: {
     fontSize: font.base,
     fontWeight: '700',
     color: colors.red,
   },
-});
+})
