@@ -29,6 +29,15 @@
         "EXPO_PUBLIC_API_URL": "https://okr-api-uziyjlcxxa-uc.a.run.app"
       }
     },
+    "simulator": {
+      "distribution": "internal",
+      "ios": {
+        "simulator": true
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://okr-api-uziyjlcxxa-uc.a.run.app"
+      }
+    },
     "production": {
       "distribution": "store",
       "android": {
