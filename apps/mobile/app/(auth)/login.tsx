@@ -65,6 +65,13 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
+      {/* Capillary signature gradient strip — 4 color stops rendered as segments */}
+      <View style={styles.brandStrip} pointerEvents="none">
+        {(['#2FAA4E', '#1CA68F', '#1E90C7', '#1E6BBF'] as const).map((c, i) => (
+          <View key={i} style={[styles.brandStripSegment, { backgroundColor: c }]} />
+        ))}
+      </View>
+
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -97,8 +104,20 @@ export default function LoginScreen() {
                   <ActivityIndicator color={colors.gray700} size="small" />
                 ) : (
                   <>
-                    <View style={styles.googleIconBox}>
-                      <Text style={styles.googleIconText}>G</Text>
+                    {/* Google logo — 4 coloured arcs mimicked as quadrant segments */}
+                    <View style={styles.googleIconWrap}>
+                      <View style={styles.googleIconInner}>
+                        {/* Top-left: blue  */}
+                        <View style={[styles.googleQ, { backgroundColor: '#4285F4', borderTopLeftRadius: 99 }]} />
+                        {/* Top-right: red */}
+                        <View style={[styles.googleQ, { backgroundColor: '#EA4335', borderTopRightRadius: 99 }]} />
+                        {/* Bottom-left: green */}
+                        <View style={[styles.googleQ, { backgroundColor: '#34A853', borderBottomLeftRadius: 99 }]} />
+                        {/* Bottom-right: yellow */}
+                        <View style={[styles.googleQ, { backgroundColor: '#FBBC05', borderBottomRightRadius: 99 }]} />
+                        {/* White centre circle to make it look like the G */}
+                        <View style={styles.googleCentre} />
+                      </View>
                     </View>
                     <Text style={styles.googleButtonText}>Continue with Google</Text>
                   </>
@@ -193,6 +212,16 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
+
+  // ── Brand strip ─────────────────────────────────────────────────────────────
+  brandStrip: {
+    flexDirection: 'row',
+    height: 3,
+  },
+  brandStripSegment: {
+    flex: 1,
+  },
+
   flex: { flex: 1 },
   scroll: {
     flexGrow: 1,
@@ -247,19 +276,35 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     ...shadow.sm,
   },
-  googleIconBox: {
+  /** Outer wrapper sets overall icon size */
+  googleIconWrap: {
     width: 22,
     height: 22,
-    borderRadius: 4,
-    backgroundColor: '#4285F4',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
-  googleIconText: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: colors.white,
-    lineHeight: 18,
+  /** Inner container for the 4 quadrants — overflow hidden makes them circular */
+  googleIconInner: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    overflow: 'hidden',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    position: 'relative',
+  },
+  /** Each colour quadrant is 50% of the circle */
+  googleQ: {
+    width: '50%',
+    height: '50%',
+  },
+  /** White central disc punched out to create the "G" ring appearance */
+  googleCentre: {
+    position: 'absolute',
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: colors.white,
+    top: 6,
+    left: 6,
   },
   googleButtonText: {
     fontSize: font.base,

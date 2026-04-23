@@ -143,6 +143,13 @@ export default function CheckInScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
+      {/* Capillary signature gradient strip */}
+      <View style={styles.brandStrip} pointerEvents="none">
+        {(['#2FAA4E', '#1CA68F', '#1E90C7', '#1E6BBF'] as const).map((c, i) => (
+          <View key={i} style={[styles.brandStripSegment, { backgroundColor: c }]} />
+        ))}
+      </View>
+
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Check-in</Text>
         <Text style={styles.headerSubtitle}>
@@ -403,8 +410,18 @@ export default function CheckInScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: colors.gray50,
+    backgroundColor: colors.background,
   },
+
+  // ── Brand strip ─────────────────────────────────────────────────────────────
+  brandStrip: {
+    flexDirection: 'row',
+    height: 3,
+  },
+  brandStripSegment: {
+    flex: 1,
+  },
+
   flex: {
     flex: 1,
   },

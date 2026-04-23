@@ -91,6 +91,13 @@ export default function DashboardScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
+      {/* Capillary signature gradient strip */}
+      <View style={styles.brandStrip} pointerEvents="none">
+        {(['#2FAA4E', '#1CA68F', '#1E90C7', '#1E6BBF'] as const).map((c, i) => (
+          <View key={i} style={[styles.brandStripSegment, { backgroundColor: c }]} />
+        ))}
+      </View>
+
       {/* ── Branded header ───────────────────────────────────────────── */}
       <View style={styles.header}>
         <View>
@@ -246,6 +253,16 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
+
+  // ── Brand strip ─────────────────────────────────────────────────────────────
+  brandStrip: {
+    flexDirection: 'row',
+    height: 3,
+  },
+  brandStripSegment: {
+    flex: 1,
+  },
+
   centered: {
     flex: 1,
     justifyContent: 'center',

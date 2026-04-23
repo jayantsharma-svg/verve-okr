@@ -24,7 +24,7 @@ export default function DashboardPage() {
   })
 
   const stats = {
-    total: objectives?.length ?? 0,
+    total:    objectives?.length ?? 0,
     onTrack:  objectives?.filter((o) => (o as any).worstConfidenceRank === 0).length ?? 0,
     atRisk:   objectives?.filter((o) => (o as any).worstConfidenceRank === 1).length ?? 0,
     offTrack: objectives?.filter((o) => (o as any).worstConfidenceRank === 2).length ?? 0,
@@ -32,11 +32,11 @@ export default function DashboardPage() {
 
   return (
     <div className="p-8">
-      {/* Header */}
+      {/* Page header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
+        <h1 className="text-2xl font-extrabold text-ink-900 tracking-tight">Dashboard</h1>
         {activeCycle && (
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-ink-500 mt-1 font-medium">
             {activeCycle.name} · {formatDate((activeCycle as any).startDate)} – {formatDate((activeCycle as any).endDate)}
           </p>
         )}
@@ -44,19 +44,19 @@ export default function DashboardPage() {
 
       {/* Stat cards */}
       <div className="grid grid-cols-4 gap-4 mb-8">
-        <StatCard label="Total OKRs" value={stats.total} icon={<TrendingUp size={18} />} color="blue" />
-        <StatCard label="On Track" value={stats.onTrack} icon={<CheckCircle2 size={18} />} color="green" />
-        <StatCard label="At Risk" value={stats.atRisk} icon={<Clock size={18} />} color="amber" />
-        <StatCard label="Off Track" value={stats.offTrack} icon={<AlertTriangle size={18} />} color="red" />
+        <StatCard label="Total OKRs"  value={stats.total}    icon={<TrendingUp size={16} />}    color="blue"  />
+        <StatCard label="On Track"    value={stats.onTrack}  icon={<CheckCircle2 size={16} />}  color="green" />
+        <StatCard label="At Risk"     value={stats.atRisk}   icon={<Clock size={16} />}          color="amber" />
+        <StatCard label="Off Track"   value={stats.offTrack} icon={<AlertTriangle size={16} />}  color="red"   />
       </div>
 
       {/* OKR list */}
       <section>
-        <h2 className="text-lg font-medium text-gray-900 mb-4">My OKRs</h2>
+        <h2 className="text-base font-bold text-ink-900 mb-4 tracking-tight">My OKRs</h2>
         {isLoading ? (
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-24 bg-gray-100 rounded-xl animate-pulse" />
+              <div key={i} className="h-24 bg-ink-100 rounded-xl animate-pulse" />
             ))}
           </div>
         ) : objectives?.length === 0 ? (
@@ -78,17 +78,18 @@ function StatCard({
 }: {
   label: string; value: number; icon: React.ReactNode; color: 'blue' | 'green' | 'amber' | 'red'
 }) {
-  const colors = {
-    blue:  'bg-blue-50 text-blue-600',
-    green: 'bg-green-50 text-green-600',
-    amber: 'bg-amber-50 text-amber-600',
-    red:   'bg-red-50 text-red-600',
+  const colorMap = {
+    blue:  { icon: 'bg-cap-blue-l text-cap-blue', bar: 'bg-cap-blue' },
+    green: { icon: 'bg-cap-green-l text-cap-green', bar: 'bg-cap-green' },
+    amber: { icon: 'bg-cap-amber-l text-cap-amber', bar: 'bg-cap-amber' },
+    red:   { icon: 'bg-cap-red-l text-cap-red',   bar: 'bg-cap-red' },
   }
+  const c = colorMap[color]
   return (
-    <div className="bg-white rounded-xl border border-gray-100 p-5">
-      <div className={`inline-flex p-2 rounded-lg mb-3 ${colors[color]}`}>{icon}</div>
-      <div className="text-2xl font-semibold text-gray-900">{value}</div>
-      <div className="text-sm text-gray-500 mt-0.5">{label}</div>
+    <div className="bg-white rounded-xl border border-ink-100 p-5 shadow-cap-sm hover:shadow-cap-md transition-shadow">
+      <div className={`inline-flex p-2 rounded-lg mb-3 ${c.icon}`}>{icon}</div>
+      <div className="text-2xl font-extrabold text-ink-900 tracking-tight">{value}</div>
+      <div className="text-xs font-semibold text-ink-500 mt-0.5 uppercase tracking-wide">{label}</div>
     </div>
   )
 }
@@ -102,32 +103,39 @@ function ObjectiveCard({ objective }: { objective: Objective }) {
     : o.worstConfidenceRank === 1 ? 'at_risk'
     : 'on_track'
 
+  const progressColor =
+    avgProgress >= 70 ? 'bg-cap-green'
+    : avgProgress >= 40 ? 'bg-cap-amber'
+    : 'bg-cap-red'
+
   return (
     <a
       href={`/objectives/${objective.id}`}
-      className="block bg-white rounded-xl border border-gray-100 p-5 hover:border-blue-200 hover:shadow-sm transition-all"
+      className="block bg-white rounded-xl border border-ink-100 p-5 hover:border-cap-blue hover:shadow-cap-md transition-all group"
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
-          <h3 className="font-medium text-gray-900 truncate">{objective.title}</h3>
-          <p className="text-xs text-gray-400 mt-0.5 capitalize">
+          <h3 className="font-bold text-ink-900 truncate group-hover:text-cap-blue transition-colors">
+            {objective.title}
+          </h3>
+          <p className="text-xs text-ink-400 mt-0.5 capitalize font-medium">
             {objective.level} · {krCount} key result{krCount !== 1 ? 's' : ''}
           </p>
         </div>
-        <span className={`shrink-0 text-xs font-medium px-2.5 py-1 rounded-full ${confidenceColor(worstConfidence)}`}>
+        <span className={`shrink-0 text-xs font-semibold px-2.5 py-1 rounded-full ${confidenceColor(worstConfidence)}`}>
           {confidenceLabel(worstConfidence)}
         </span>
       </div>
 
       {/* Progress bar */}
       <div className="mt-4">
-        <div className="flex justify-between text-xs text-gray-500 mb-1.5">
+        <div className="flex justify-between text-xs text-ink-500 mb-1.5 font-medium">
           <span>Progress</span>
-          <span>{avgProgress}%</span>
+          <span className="font-bold">{avgProgress}%</span>
         </div>
-        <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+        <div className="h-1.5 bg-ink-100 rounded-full overflow-hidden">
           <div
-            className="h-full bg-blue-500 rounded-full transition-all"
+            className={`h-full ${progressColor} rounded-full transition-all duration-500`}
             style={{ width: `${avgProgress}%` }}
           />
         </div>
@@ -135,9 +143,9 @@ function ObjectiveCard({ objective }: { objective: Objective }) {
 
       {/* SMART score badge */}
       {o.smartOverallScore != null && (
-        <div className="mt-3 inline-flex items-center gap-1 text-xs text-gray-400">
+        <div className="mt-3 inline-flex items-center gap-1.5 text-xs text-ink-400 font-medium">
           <span>SMART+</span>
-          <span className={`font-medium ${o.smartOverallScore >= 8 ? 'text-green-600' : o.smartOverallScore >= 5 ? 'text-amber-600' : 'text-red-600'}`}>
+          <span className={`font-bold ${o.smartOverallScore >= 8 ? 'text-cap-green' : o.smartOverallScore >= 5 ? 'text-cap-amber' : 'text-cap-red'}`}>
             {o.smartOverallScore}/10
           </span>
         </div>
@@ -148,17 +156,16 @@ function ObjectiveCard({ objective }: { objective: Objective }) {
 
 function EmptyState() {
   return (
-    <div className="text-center py-16 bg-white rounded-xl border border-gray-100">
-      <Target className="mx-auto text-gray-300 mb-3" size={40} />
-      <h3 className="font-medium text-gray-700">No OKRs yet</h3>
-      <p className="text-sm text-gray-400 mt-1">Create your first objective to get started.</p>
+    <div className="text-center py-16 bg-white rounded-xl border border-ink-100">
+      <Target className="mx-auto text-ink-300 mb-3" size={40} />
+      <h3 className="font-bold text-ink-700">No OKRs yet</h3>
+      <p className="text-sm text-ink-400 mt-1">Create your first objective to get started.</p>
       <a
         href="/objectives/new"
-        className="mt-4 inline-block bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+        className="mt-4 inline-block bg-cap-blue text-white text-sm font-semibold px-5 py-2.5 rounded-lg hover:bg-cap-blue-d transition-colors shadow-cap-sm"
       >
         Create OKR
       </a>
     </div>
   )
 }
-

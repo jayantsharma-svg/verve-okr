@@ -1,6 +1,6 @@
 /**
- * Verve logo mark — a bold italic "V" in a CDP-blue rounded square.
- * Used on the login/splash screens and wherever a brand mark is needed.
+ * Verve logo mark — a bold italic "V" in a CDP-blue rounded square,
+ * with the Capillary signature 4-dot gradient strip beneath the wordmark.
  */
 import { View, Text, StyleSheet } from 'react-native'
 import { colors, radius, shadow } from '@/lib/theme'
@@ -10,9 +10,14 @@ interface LogoProps {
   size?: number
   /** Show the wordmark "Verve" below the mark (default true) */
   showWordmark?: boolean
+  /** Show "by Capillary" sub-label (default true when showWordmark) */
+  showSubLabel?: boolean
 }
 
-export function Logo({ size = 64, showWordmark = true }: LogoProps) {
+/** The 4 stops of the Capillary signature gradient, rendered as dots */
+const STRIP_COLORS = ['#2FAA4E', '#1CA68F', '#1E90C7', '#1E6BBF']
+
+export function Logo({ size = 64, showWordmark = true, showSubLabel = true }: LogoProps) {
   const fontSize = size * 0.52
 
   return (
@@ -39,9 +44,22 @@ export function Logo({ size = 64, showWordmark = true }: LogoProps) {
 
       {/* Wordmark */}
       {showWordmark && (
-        <View style={styles.wordmarkRow}>
-          <Text style={styles.wordmark}>Verve</Text>
-          <View style={styles.dot} />
+        <View style={styles.wordmarkBlock}>
+          <View style={styles.wordmarkRow}>
+            <Text style={styles.wordmark}>Verve</Text>
+            <View style={styles.dot} />
+          </View>
+
+          {showSubLabel && (
+            <Text style={styles.subLabel}>by Capillary</Text>
+          )}
+
+          {/* Capillary signature 4-dot accent strip */}
+          <View style={styles.stripRow}>
+            {STRIP_COLORS.map((c, i) => (
+              <View key={i} style={[styles.stripDot, { backgroundColor: c }]} />
+            ))}
+          </View>
         </View>
       )}
     </View>
@@ -77,10 +95,14 @@ const styles = StyleSheet.create({
     // nudge down slightly so it looks optically centered
     marginTop: 2,
   },
+  wordmarkBlock: {
+    alignItems: 'center',
+    marginTop: 12,
+    gap: 3,
+  },
   wordmarkRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 12,
     gap: 5,
   },
   wordmark: {
@@ -95,5 +117,22 @@ const styles = StyleSheet.create({
     borderRadius: 3,
     backgroundColor: colors.primary,
     marginBottom: 2,
+  },
+  subLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: colors.gray400,
+    letterSpacing: 0.3,
+    textTransform: 'uppercase',
+  },
+  stripRow: {
+    flexDirection: 'row',
+    gap: 4,
+    marginTop: 6,
+  },
+  stripDot: {
+    width: 8,
+    height: 4,
+    borderRadius: 2,
   },
 })

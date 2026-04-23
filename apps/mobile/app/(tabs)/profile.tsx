@@ -84,6 +84,13 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
+      {/* Capillary signature gradient strip */}
+      <View style={styles.brandStrip} pointerEvents="none">
+        {(['#2FAA4E', '#1CA68F', '#1E90C7', '#1E6BBF'] as const).map((c, i) => (
+          <View key={i} style={[styles.brandStripSegment, { backgroundColor: c }]} />
+        ))}
+      </View>
+
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Profile</Text>
@@ -135,6 +142,16 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
+
+  // ── Brand strip ─────────────────────────────────────────────────────────────
+  brandStrip: {
+    flexDirection: 'row',
+    height: 3,
+  },
+  brandStripSegment: {
+    flex: 1,
+  },
+
   centered: {
     flex: 1,
     justifyContent: 'center',
@@ -169,21 +186,24 @@ const styles = StyleSheet.create({
 
   // ── Hero card ─────────────────────────────────────────────────────────────
   heroCard: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.primaryLight,   // light CDP-blue tint
     borderRadius: radius.xl,
     padding: spacing.lg,
+    paddingVertical: spacing.xl,
     alignItems: 'center',
     marginBottom: spacing.sm,
     ...shadow.md,
   },
   avatarCircle: {
-    width: 72,
-    height: 72,
+    width: 76,
+    height: 76,
     borderRadius: radius.full,
     backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.md,
+    borderWidth: 3,
+    borderColor: 'rgba(255,255,255,0.6)',
     ...shadow.lg,
   },
   avatarInitials: {

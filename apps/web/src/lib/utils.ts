@@ -8,9 +8,9 @@ export function cn(...inputs: ClassValue[]) {
 
 export function confidenceColor(confidence: Confidence): string {
   return {
-    on_track: 'text-green-600 bg-green-50',
-    at_risk: 'text-amber-600 bg-amber-50',
-    off_track: 'text-red-600 bg-red-50',
+    on_track:  'text-cap-green  bg-cap-green-l',
+    at_risk:   'text-cap-amber  bg-cap-amber-l',
+    off_track: 'text-cap-red    bg-cap-red-l',
   }[confidence]
 }
 
@@ -35,7 +35,7 @@ export function formatDate(iso: string): string {
 }
 
 export function smartScoreColor(score: number): string {
-  if (score >= 8) return 'text-green-600'
-  if (score >= 5) return 'text-amber-600'
-  return 'text-red-600'
+  if (score >= 8) return 'text-cap-green'
+  if (score >= 5) return 'text-cap-amber'
+  return 'text-cap-red'
 }

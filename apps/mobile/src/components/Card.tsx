@@ -31,11 +31,11 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     padding: 16,
     marginBottom: 12,
-    // iOS
-    shadowColor: '#4F46E5',
+    // iOS — navy-tinted shadow matching Capillary design system
+    shadowColor: '#091E42',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.07,
-    shadowRadius: 8,
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
     // Android
     elevation: 3,
   },
