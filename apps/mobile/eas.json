@@ -53,7 +53,7 @@
       "ios": {
         "appleId": "dev@capillary.com",
         "ascAppId": "YOUR_APP_STORE_CONNECT_APP_ID",
-        "appleTeamId": "YOUR_APPLE_TEAM_ID"
+        "appleTeamId": "3RGFD99U34"
       },
       "android": {
         "serviceAccountKeyPath": "./google-play-service-account.json",
