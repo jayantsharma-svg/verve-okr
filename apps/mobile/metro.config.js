@@ -1,3 +1,6 @@
+// Set Expo Router app root before Metro initializes
+process.env.EXPO_ROUTER_APP_ROOT = 'src/app'
+
 const { getDefaultConfig } = require('expo/metro-config')
 const path = require('path')
 
