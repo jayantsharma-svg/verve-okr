@@ -26,7 +26,8 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://okr-api-uziyjlcxxa-uc.a.run.app"
+        "EXPO_PUBLIC_API_URL": "https://okr-api-uziyjlcxxa-uc.a.run.app",
+        "EXPO_ROUTER_APP_ROOT": "src/app"
       }
     },
     "simulator": {
@@ -35,7 +36,8 @@
         "simulator": true
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://okr-api-uziyjlcxxa-uc.a.run.app"
+        "EXPO_PUBLIC_API_URL": "https://okr-api-uziyjlcxxa-uc.a.run.app",
+        "EXPO_ROUTER_APP_ROOT": "src/app"
       }
     },
     "production": {
