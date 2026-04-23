@@ -3,7 +3,8 @@
     "allow": [
       "Bash(gcloud --version)",
       "Bash(brew install *)",
-      "Bash(npm install *)"
+      "Bash(npm install *)",
+      "Bash(gcloud logging *)"
     ]
   }
 }

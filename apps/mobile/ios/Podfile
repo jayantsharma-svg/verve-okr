@@ -22,7 +22,7 @@ platform :ios, podfile_properties['ios.deploymentTarget'] || '15.1'
 
 prepare_react_native_project!
 
-target 'OKRTool' do
+target 'Verve' do
   use_expo_modules!
 
   if ENV['EXPO_USE_COMMUNITY_AUTOLINKING'] == '1'
@@ -61,39 +61,5 @@ target 'OKRTool' do
       :mac_catalyst_enabled => false,
       :ccache_enabled => ccache_enabled?(podfile_properties),
     )
-
-    # ── Fix: fmt 11.x uses FMT_STRING (consteval) which breaks because the
-    # xcconfig-save step in react_native_post_install uses an unquoted `find`
-    # command that silently fails on paths with spaces ("Claude Code Try").
-    # The xcconfig files are never updated on disk, so Clang compiles fmt with
-    # C++17 where consteval is unavailable.
-    # Workaround: patch format-inl.h directly to drop the FMT_STRING wrapper —
-    # fmt::format_to accepts plain string literals identically at runtime.
-    fmt_inl = "#{installer.sandbox.root}/fmt/include/fmt/format-inl.h"
-    if File.exist?(fmt_inl)
-      File.chmod(0644, fmt_inl)
-      content = File.read(fmt_inl)
-      patched = content
-        .gsub('fmt::format_to(it, FMT_STRING("{}{}"), message, SEP)',
-              'fmt::format_to(it, "{}{}", message, SEP)')
-        .gsub('fmt::format_to(it, FMT_STRING("{}{}"), ERROR_STR, error_code)',
-              'fmt::format_to(it, "{}{}", ERROR_STR, error_code)')
-        .gsub('out = fmt::format_to(out, FMT_STRING("{:x}"), value)',
-              'out = fmt::format_to(out, "{:x}", value)')
-        .gsub('out = fmt::format_to(out, FMT_STRING("{:08x}"), value)',
-              'out = fmt::format_to(out, "{:08x}", value)')
-        .gsub('out = fmt::format_to(out, FMT_STRING("p{}"),',
-              'out = fmt::format_to(out, "p{}",')
-        .gsub('FMT_THROW(system_error(errno, FMT_STRING("cannot write to file")))',
-              'FMT_THROW(system_error(errno, "cannot write to file"))')
-        .gsub('FMT_THROW(system_error(errno, FMT_STRING("getc failed")))',
-              'FMT_THROW(system_error(errno, "getc failed"))')
-        .gsub('FMT_THROW(system_error(errno, FMT_STRING("ungetc failed")))',
-              'FMT_THROW(system_error(errno, "ungetc failed"))')
-      if patched != content
-        File.write(fmt_inl, patched)
-        Pod::UI.puts("[Fix] Patched fmt/format-inl.h: replaced FMT_STRING with plain literals")
-      end
-    end
   end
 end
