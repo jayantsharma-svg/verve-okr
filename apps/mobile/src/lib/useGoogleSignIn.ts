@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Linking } from 'react-native'
+import * as WebBrowser from 'expo-web-browser'
 import { saveToken } from './api'
 
 const API_URL = process.env['EXPO_PUBLIC_API_URL'] ?? 'http://localhost:3001'
@@ -16,10 +16,11 @@ interface UseGoogleSignInResult {
 }
 
 /**
- * Opens the backend's Google OAuth URL in the system browser (Safari/Chrome).
- * After the user approves, the backend redirects to
- *   verve://auth/google-callback?token=<jwt>
- * which is caught by the Linking listener in app/_layout.tsx.
+ * Opens the backend's Google OAuth URL via ASWebAuthenticationSession
+ * (an in-app browser sheet). The app stays in the foreground throughout —
+ * no background/foreground transition — and the result URL is returned
+ * directly from openAuthSessionAsync when the backend redirects to the
+ * verve:// scheme, so no Linking listener is needed.
  */
 export function useGoogleSignIn(opts: {
   onSuccess: () => void
@@ -31,14 +32,17 @@ export function useGoogleSignIn(opts: {
     setLoading(true)
     try {
       const redirectUri = encodeURIComponent(MOBILE_REDIRECT_URI)
-      const url = `${API_URL}/auth/google?mobile_redirect=${redirectUri}`
-      const canOpen = await Linking.canOpenURL(url)
-      if (!canOpen) {
-        opts.onError('Unable to open the sign-in page. Please try again.')
-        return
+      const authUrl = `${API_URL}/auth/google?mobile_redirect=${redirectUri}`
+
+      const result = await WebBrowser.openAuthSessionAsync(authUrl, MOBILE_REDIRECT_URI)
+
+      if (result.type === 'success') {
+        await handleGoogleCallbackUrl(result.url, {
+          onSuccess: opts.onSuccess,
+          onError: opts.onError,
+        })
       }
-      await Linking.openURL(url)
-      // Outcome is handled by the Linking listener in _layout.tsx
+      // type === 'cancel' or 'dismiss': user closed the sheet, do nothing
     } catch {
       opts.onError('Failed to open sign-in page. Please try again.')
     } finally {
@@ -50,8 +54,9 @@ export function useGoogleSignIn(opts: {
 }
 
 /**
- * Called by the root layout's Linking handler when the deep link
- * verve://auth/google-callback?token=<jwt> is received.
+ * Parses the verve://auth/google-callback?token=<jwt> URL,
+ * saves the token, and fires the appropriate callback.
+ * Still exported so _layout.tsx can use it as a cold-start fallback.
  */
 export async function handleGoogleCallbackUrl(
   url: string,
