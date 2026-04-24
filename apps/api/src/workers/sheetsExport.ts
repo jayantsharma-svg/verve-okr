@@ -15,10 +15,17 @@ async function getSheetsClient(): Promise<sheets_v4.Sheets> {
   const keyBase64 = process.env['GOOGLE_SERVICE_ACCOUNT_KEY_BASE64']
   if (!keyBase64) throw new Error('GOOGLE_SERVICE_ACCOUNT_KEY_BASE64 not set')
 
+  // Use domain-wide delegation to impersonate a Workspace user who owns/has
+  // access to the sheet — no need to share the sheet with the service account
+  // email directly (avoids external-domain sharing restrictions).
+  const adminEmail = process.env['GOOGLE_ADMIN_EMAIL']
+  if (!adminEmail) throw new Error('GOOGLE_ADMIN_EMAIL not set')
+
   const keyJson = JSON.parse(Buffer.from(keyBase64, 'base64').toString('utf8'))
   const auth = new google.auth.GoogleAuth({
     credentials: keyJson,
     scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+    clientOptions: { subject: adminEmail },
   })
   return google.sheets({ version: 'v4', auth })
 }
