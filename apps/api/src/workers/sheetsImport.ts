@@ -187,11 +187,12 @@ export async function importFromSheets(opts: { triggeredBy?: string }): Promise<
         const note = notes?.trim() || `Updated via Google Sheets import`
         await client.query(
           `INSERT INTO checkins
-             (key_result_id, recorded_by, value, confidence, note)
-           VALUES ($1, $2, $3, $4, $5)`,
+             (key_result_id, author_id, previous_value, new_value, confidence, note)
+           VALUES ($1, $2, $3, $4, $5, $6)`,
           [
             krId,
             triggeredBy ?? kr.owner_id,
+            kr.current_value ?? 0,
             currentValue,
             newConfidence ?? kr.confidence,
             note,

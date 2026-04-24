@@ -16,7 +16,7 @@ $$ SELECT (ts AT TIME ZONE 'UTC')::date $$;
 -- ENUMS
 -- =============================================================================
 
-CREATE TYPE user_role        AS ENUM ('admin', 'dept_lead', 'team_lead', 'member');
+CREATE TYPE user_role        AS ENUM ('admin', 'hrbp', 'dept_lead', 'team_lead', 'member');
 CREATE TYPE auth_type        AS ENUM ('google_sso', 'email_password');
 CREATE TYPE okr_level        AS ENUM ('company', 'department', 'team', 'individual');
 CREATE TYPE okr_status       AS ENUM ('draft', 'pending_approval', 'active', 'closed', 'deleted');
