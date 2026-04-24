@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   View,
   Text,
@@ -6,10 +6,13 @@ import {
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
+  Switch,
+  Alert,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { Ionicons } from '@expo/vector-icons'
 import { api, clearToken } from '@/lib/api'
 import { colors, spacing, radius, font, shadow } from '@/lib/theme'
 import Card from '@/components/Card'
@@ -26,6 +29,14 @@ const AUTH_METHOD_LABELS: Record<string, string> = {
   google_sso:     'Google SSO',
   email_password: 'Password',
 }
+
+const LEAD_TIME_OPTIONS = [
+  { label: '15 min', value: 15 },
+  { label: '30 min', value: 30 },
+  { label: '1 hour', value: 60 },
+  { label: '2 hours', value: 120 },
+  { label: '4 hours', value: 240 },
+]
 
 function getInitials(name: string): string {
   return name
@@ -44,6 +55,239 @@ function InfoRow({ label, value, last = false }: { label: string; value: string;
   )
 }
 
+function ToggleRow({
+  label,
+  sub,
+  value,
+  onChange,
+  last = false,
+}: {
+  label: string
+  sub?: string
+  value: boolean
+  onChange: (v: boolean) => void
+  last?: boolean
+}) {
+  return (
+    <View style={[styles.toggleRow, last && styles.infoRowLast]}>
+      <View style={styles.toggleRowLeft}>
+        <Text style={styles.toggleLabel}>{label}</Text>
+        {sub ? <Text style={styles.toggleSub}>{sub}</Text> : null}
+      </View>
+      <Switch
+        value={value}
+        onValueChange={onChange}
+        trackColor={{ false: colors.gray200, true: colors.primary }}
+        thumbColor={colors.white}
+      />
+    </View>
+  )
+}
+
+// ─── Notifications section ────────────────────────────────────────────────────
+function NotificationsSection() {
+  const qc = useQueryClient()
+  const { data: prefs, isLoading } = useQuery({
+    queryKey: ['notif-prefs'],
+    queryFn: api.notifications.getPrefs,
+    staleTime: 60_000,
+  })
+
+  const [channel, setChannel] = useState<'slack' | 'gmail'>('gmail')
+  const [checkinReminders, setCheckinReminders]     = useState(true)
+  const [reviewRequests, setReviewRequests]         = useState(true)
+  const [atRiskAlerts, setAtRiskAlerts]             = useState(true)
+  const [appraisalUpdates, setAppraisalUpdates]     = useState(true)
+  const [collaboratorRequests, setCollaboratorRequests] = useState(true)
+
+  useEffect(() => {
+    if (!prefs) return
+    setChannel(prefs.channel ?? 'gmail')
+    setCheckinReminders(prefs.checkinReminders ?? true)
+    setReviewRequests(prefs.reviewRequests ?? true)
+    setAtRiskAlerts(prefs.atRiskAlerts ?? true)
+    setAppraisalUpdates(prefs.appraisalUpdates ?? true)
+    setCollaboratorRequests(prefs.collaboratorRequests ?? true)
+  }, [prefs])
+
+  const saveMut = useMutation({
+    mutationFn: () =>
+      api.notifications.updatePrefs({
+        channel,
+        checkinReminders,
+        reviewRequests,
+        atRiskAlerts,
+        appraisalUpdates,
+        collaboratorRequests,
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['notif-prefs'] })
+      Alert.alert('Saved', 'Notification preferences updated.')
+    },
+    onError: () => Alert.alert('Error', 'Failed to save. Please try again.'),
+  })
+
+  if (isLoading) {
+    return (
+      <Card style={styles.cardSpacing}>
+        <Text style={styles.sectionTitle}>Notifications</Text>
+        <ActivityIndicator size="small" color={colors.primary} style={{ marginVertical: spacing.md }} />
+      </Card>
+    )
+  }
+
+  return (
+    <Card style={styles.cardSpacing}>
+      <Text style={styles.sectionTitle}>Notifications</Text>
+
+      {/* Channel */}
+      <Text style={styles.subLabel}>Channel</Text>
+      <View style={styles.segmentRow}>
+        {(['gmail', 'slack'] as const).map((ch) => (
+          <TouchableOpacity
+            key={ch}
+            style={[styles.segment, channel === ch && styles.segmentActive]}
+            onPress={() => setChannel(ch)}
+            activeOpacity={0.8}
+          >
+            <Ionicons
+              name={ch === 'gmail' ? 'mail-outline' : 'logo-slack'}
+              size={14}
+              color={channel === ch ? colors.white : colors.gray500}
+            />
+            <Text style={[styles.segmentText, channel === ch && styles.segmentTextActive]}>
+              {ch === 'gmail' ? 'Gmail' : 'Slack'}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      {/* Toggles */}
+      <Text style={[styles.subLabel, { marginTop: spacing.md }]}>Notify me about</Text>
+      <ToggleRow label="Check-in reminders"      value={checkinReminders}       onChange={setCheckinReminders} />
+      <ToggleRow label="Review requests"          value={reviewRequests}         onChange={setReviewRequests} />
+      <ToggleRow label="At-risk alerts"            value={atRiskAlerts}           onChange={setAtRiskAlerts} />
+      <ToggleRow label="Appraisal updates"         value={appraisalUpdates}       onChange={setAppraisalUpdates} />
+      <ToggleRow label="Collaborator requests"     value={collaboratorRequests}   onChange={setCollaboratorRequests} last />
+
+      {/* Save */}
+      <TouchableOpacity
+        style={[styles.saveBtn, saveMut.isPending && styles.btnDisabled]}
+        onPress={() => saveMut.mutate()}
+        disabled={saveMut.isPending}
+        activeOpacity={0.85}
+      >
+        {saveMut.isPending
+          ? <ActivityIndicator size="small" color={colors.white} />
+          : <Text style={styles.saveBtnText}>Save preferences</Text>}
+      </TouchableOpacity>
+    </Card>
+  )
+}
+
+// ─── Meeting Digest section ───────────────────────────────────────────────────
+function MeetingDigestSection() {
+  const qc = useQueryClient()
+  const { data: settings, isLoading } = useQuery({
+    queryKey: ['meeting-digest-settings'],
+    queryFn: api.meetingDigest.getSettings,
+    staleTime: 60_000,
+  })
+
+  const [enabled, setEnabled]           = useState(false)
+  const [leadTime, setLeadTime]         = useState(30)
+
+  useEffect(() => {
+    if (!settings) return
+    setEnabled(settings.enabled ?? false)
+    setLeadTime(settings.leadTimeMinutes ?? 30)
+  }, [settings])
+
+  const saveMut = useMutation({
+    mutationFn: () =>
+      api.meetingDigest.updateSettings({ enabled, leadTimeMinutes: leadTime }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['meeting-digest-settings'] })
+      Alert.alert('Saved', 'Meeting digest settings updated.')
+    },
+    onError: () => Alert.alert('Error', 'Failed to save. Please try again.'),
+  })
+
+  const testMut = useMutation({
+    mutationFn: () => api.meetingDigest.test(),
+    onSuccess: (data: any) =>
+      Alert.alert('Test sent', data?.message ?? 'A test digest was sent to your inbox.'),
+    onError: () => Alert.alert('Error', 'Failed to send test digest.'),
+  })
+
+  if (isLoading) {
+    return (
+      <Card style={styles.cardSpacing}>
+        <Text style={styles.sectionTitle}>Meeting Digest</Text>
+        <ActivityIndicator size="small" color={colors.primary} style={{ marginVertical: spacing.md }} />
+      </Card>
+    )
+  }
+
+  return (
+    <Card style={styles.cardSpacing}>
+      <Text style={styles.sectionTitle}>Meeting Digest</Text>
+
+      <ToggleRow
+        label="Enable meeting digest"
+        sub="Get an OKR briefing before each meeting"
+        value={enabled}
+        onChange={setEnabled}
+        last
+      />
+
+      {enabled && (
+        <>
+          <Text style={[styles.subLabel, { marginTop: spacing.md }]}>Lead time</Text>
+          <View style={styles.leadTimeGrid}>
+            {LEAD_TIME_OPTIONS.map((opt) => (
+              <TouchableOpacity
+                key={opt.value}
+                style={[styles.leadTimeChip, leadTime === opt.value && styles.leadTimeChipActive]}
+                onPress={() => setLeadTime(opt.value)}
+                activeOpacity={0.8}
+              >
+                <Text style={[styles.leadTimeText, leadTime === opt.value && styles.leadTimeTextActive]}>
+                  {opt.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </>
+      )}
+
+      <View style={styles.digestBtnRow}>
+        <TouchableOpacity
+          style={[styles.saveBtn, styles.saveBtnFlex, saveMut.isPending && styles.btnDisabled]}
+          onPress={() => saveMut.mutate()}
+          disabled={saveMut.isPending}
+          activeOpacity={0.85}
+        >
+          {saveMut.isPending
+            ? <ActivityIndicator size="small" color={colors.white} />
+            : <Text style={styles.saveBtnText}>Save</Text>}
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.testBtn, testMut.isPending && styles.btnDisabled]}
+          onPress={() => testMut.mutate()}
+          disabled={testMut.isPending || !enabled}
+          activeOpacity={0.85}
+        >
+          {testMut.isPending
+            ? <ActivityIndicator size="small" color={colors.primary} />
+            : <Text style={styles.testBtnText}>Test</Text>}
+        </TouchableOpacity>
+      </View>
+    </Card>
+  )
+}
+
+// ─── Screen ───────────────────────────────────────────────────────────────────
 export default function ProfileScreen() {
   const router = useRouter()
 
@@ -124,6 +368,12 @@ export default function ProfileScreen() {
           <InfoRow label="Role" value={roleStyle.label} last />
         </Card>
 
+        {/* ── Notifications ───────────────────────────────────────────── */}
+        <NotificationsSection />
+
+        {/* ── Meeting Digest ──────────────────────────────────────────── */}
+        <MeetingDigestSection />
+
         {/* ── Sign Out ────────────────────────────────────────────────── */}
         <TouchableOpacity
           style={styles.signOutButton}
@@ -143,20 +393,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
 
-  // ── Brand strip ─────────────────────────────────────────────────────────────
-  brandStrip: {
-    flexDirection: 'row',
-    height: 3,
-  },
-  brandStripSegment: {
-    flex: 1,
-  },
+  brandStrip: { flexDirection: 'row', height: 3 },
+  brandStripSegment: { flex: 1 },
 
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+  centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   errorText: {
     color: colors.red,
     fontSize: font.base,
@@ -164,7 +404,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
   },
 
-  // ── Header ───────────────────────────────────────────────────────────────
   header: {
     paddingHorizontal: spacing.md,
     paddingTop: spacing.sm,
@@ -184,9 +423,8 @@ const styles = StyleSheet.create({
   },
   cardSpacing: { marginBottom: spacing.sm },
 
-  // ── Hero card ─────────────────────────────────────────────────────────────
   heroCard: {
-    backgroundColor: colors.primaryLight,   // light CDP-blue tint
+    backgroundColor: colors.primaryLight,
     borderRadius: radius.xl,
     padding: spacing.lg,
     paddingVertical: spacing.xl,
@@ -229,12 +467,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 4,
   },
-  roleBadgeText: {
-    fontSize: font.sm,
-    fontWeight: '700',
-  },
+  roleBadgeText: { fontSize: font.sm, fontWeight: '700' },
 
-  // ── Info rows ─────────────────────────────────────────────────────────────
   sectionTitle: {
     fontSize: font.sm,
     fontWeight: '700',
@@ -243,6 +477,15 @@ const styles = StyleSheet.create({
     letterSpacing: 0.6,
     marginBottom: spacing.sm,
   },
+  subLabel: {
+    fontSize: font.xs,
+    fontWeight: '600',
+    color: colors.gray400,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: spacing.xs,
+  },
+
   infoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -251,20 +494,95 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.gray100,
   },
-  infoRowLast: {
-    borderBottomWidth: 0,
-  },
-  infoLabel: {
-    fontSize: font.base,
-    color: colors.gray500,
-  },
-  infoValue: {
-    fontSize: font.base,
-    fontWeight: '600',
-    color: colors.gray900,
-  },
+  infoRowLast: { borderBottomWidth: 0 },
+  infoLabel: { fontSize: font.base, color: colors.gray500 },
+  infoValue: { fontSize: font.base, fontWeight: '600', color: colors.gray900 },
 
-  // ── Sign out ──────────────────────────────────────────────────────────────
+  toggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.gray100,
+  },
+  toggleRowLeft: { flex: 1, marginRight: spacing.sm },
+  toggleLabel: { fontSize: font.base, color: colors.gray900, fontWeight: '500' },
+  toggleSub: { fontSize: font.xs, color: colors.gray400, marginTop: 2 },
+
+  segmentRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginTop: 4,
+  },
+  segment: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 5,
+    paddingVertical: 9,
+    borderRadius: radius.sm,
+    borderWidth: 1.5,
+    borderColor: colors.gray200,
+    backgroundColor: colors.white,
+  },
+  segmentActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  segmentText: { fontSize: font.sm, fontWeight: '600', color: colors.gray600 },
+  segmentTextActive: { color: colors.white },
+
+  leadTimeGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.xs,
+    marginTop: 4,
+  },
+  leadTimeChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: radius.full,
+    borderWidth: 1.5,
+    borderColor: colors.gray200,
+    backgroundColor: colors.white,
+  },
+  leadTimeChipActive: {
+    backgroundColor: colors.primaryLight,
+    borderColor: colors.primary,
+  },
+  leadTimeText: { fontSize: font.sm, fontWeight: '600', color: colors.gray600 },
+  leadTimeTextActive: { color: colors.primary },
+
+  saveBtn: {
+    marginTop: spacing.md,
+    backgroundColor: colors.primary,
+    borderRadius: radius.sm,
+    paddingVertical: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  saveBtnFlex: { flex: 1 },
+  saveBtnText: { fontSize: font.sm, fontWeight: '700', color: colors.white },
+  btnDisabled: { opacity: 0.55 },
+
+  digestBtnRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginTop: spacing.md,
+  },
+  testBtn: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: 11,
+    borderRadius: radius.sm,
+    borderWidth: 1.5,
+    borderColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  testBtnText: { fontSize: font.sm, fontWeight: '700', color: colors.primary },
+
   signOutButton: {
     borderRadius: radius.md,
     paddingVertical: spacing.md,
@@ -272,6 +590,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.redLight,
     borderWidth: 1.5,
     borderColor: colors.red + '40',
+    marginTop: spacing.xs,
   },
   signOutButtonText: {
     fontSize: font.base,

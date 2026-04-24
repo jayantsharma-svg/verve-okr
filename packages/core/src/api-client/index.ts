@@ -237,6 +237,23 @@ export function createApiClient(config: ClientConfig) {
         patch<NotificationPreference>('/me/notification-prefs', data),
     },
 
+    // Meeting Digest
+    meetingDigest: {
+      getSettings: () => get<{
+        enabled: boolean
+        leadTimeMinutes: number
+        calendarId: string | null
+      }>('/meeting-digest/settings'),
+      updateSettings: (data: {
+        enabled: boolean
+        leadTimeMinutes: number
+        calendarId?: string | null
+      }) => patch<{ enabled: boolean; leadTimeMinutes: number; calendarId: string | null }>(
+        '/meeting-digest/settings', data,
+      ),
+      test: () => post<{ message: string }>('/meeting-digest/test'),
+    },
+
     // Export / Download
     exports: {
       downloadUrl: (params: Record<string, string>) =>

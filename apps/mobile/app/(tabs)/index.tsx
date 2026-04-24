@@ -10,6 +10,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { useQuery } from '@tanstack/react-query'
+import { Ionicons } from '@expo/vector-icons'
 import { api } from '@/lib/api'
 import { colors, spacing, radius, font, shadow } from '@/lib/theme'
 import Card from '@/components/Card'
@@ -89,6 +90,13 @@ export default function DashboardScreen() {
 
   const topObjectives = (objectives ?? []).slice(0, 3)
   const firstName = me?.name?.split(' ')[0] ?? 'there'
+
+  const { data: reviews } = useQuery({
+    queryKey: ['reviews'],
+    queryFn: () => api.reviews.list(),
+    staleTime: 30_000,
+  })
+  const pendingReviewCount = (reviews ?? []).filter((r: any) => r.status === 'pending').length
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -231,6 +239,38 @@ export default function DashboardScreen() {
             )
           })
         )}
+
+        {/* ── Reviews ──────────────────────────────────────────────────── */}
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={() => router.push('/reviews')}
+        >
+          <Card style={[styles.cardSpacing, styles.reviewsCard]}>
+            <View style={styles.reviewsRow}>
+              <View style={styles.reviewsLeft}>
+                <View style={styles.reviewsIconWrap}>
+                  <Ionicons name="clipboard-outline" size={20} color={colors.primary} />
+                </View>
+                <View>
+                  <Text style={styles.reviewsTitle}>Reviews</Text>
+                  <Text style={styles.reviewsSub}>
+                    {pendingReviewCount > 0
+                      ? `${pendingReviewCount} pending review${pendingReviewCount !== 1 ? 's' : ''}`
+                      : 'All caught up'}
+                  </Text>
+                </View>
+              </View>
+              <View style={styles.reviewsRight}>
+                {pendingReviewCount > 0 && (
+                  <View style={styles.reviewsBadge}>
+                    <Text style={styles.reviewsBadgeText}>{pendingReviewCount}</Text>
+                  </View>
+                )}
+                <Ionicons name="chevron-forward" size={16} color={colors.gray400} />
+              </View>
+            </View>
+          </Card>
+        </TouchableOpacity>
 
         {/* ── Quick Check-in CTA ───────────────────────────────────────── */}
         <TouchableOpacity
@@ -456,6 +496,57 @@ const styles = StyleSheet.create({
     color: colors.gray500,
     textAlign: 'center',
     paddingVertical: spacing.md,
+  },
+
+  // ── Reviews card ──────────────────────────────────────────────────────────
+  reviewsCard: {},
+  reviewsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  reviewsLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    flex: 1,
+  },
+  reviewsIconWrap: {
+    width: 38,
+    height: 38,
+    borderRadius: radius.md,
+    backgroundColor: colors.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  reviewsTitle: {
+    fontSize: font.base,
+    fontWeight: '700',
+    color: colors.gray900,
+  },
+  reviewsSub: {
+    fontSize: font.xs,
+    color: colors.gray500,
+    marginTop: 2,
+    fontWeight: '500',
+  },
+  reviewsRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  reviewsBadge: {
+    backgroundColor: colors.primary,
+    borderRadius: radius.full,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    minWidth: 22,
+    alignItems: 'center',
+  },
+  reviewsBadgeText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: colors.white,
   },
 
   // ── Check-in CTA ──────────────────────────────────────────────────────────
