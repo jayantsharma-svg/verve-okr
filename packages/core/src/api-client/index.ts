@@ -258,6 +258,8 @@ export function createApiClient(config: ClientConfig) {
     exports: {
       downloadUrl: (params: Record<string, string>) =>
         `${config.baseUrl}/export/okrs?` + new URLSearchParams(params).toString(),
+      exportLink: (scope: string, cycleId?: string) =>
+        post<{ url: string }>('/me/export-link', { scope, cycleId }),
     },
 
     // Admin

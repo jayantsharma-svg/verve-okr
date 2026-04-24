@@ -4,6 +4,7 @@ import helmet from 'helmet'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import rateLimit from 'express-rate-limit'
+import jwt from 'jsonwebtoken'
 
 import authRouter from './routes/auth.js'
 import objectivesRouter from './routes/objectives.js'
@@ -122,6 +123,26 @@ app.patch('/me/notification-prefs', requireAuth, async (req, res, next) => {
   } catch (err) { next(err) }
 })
 
+// ─── Export link endpoint ─────────────────────────────────────────────────────
+app.post('/me/export-link', requireAuth, async (req, res, next) => {
+  try {
+    const { scope, cycleId } = req.body as { scope: 'mine' | 'team' | 'department' | 'all'; cycleId?: string }
+
+    if (scope === 'all' && req.user!.role !== 'admin' && req.user!.role !== 'hrbp') {
+      return res.status(403).json({ error: { message: 'Insufficient permissions for all-scope export', code: 'FORBIDDEN' } })
+    }
+
+    const token = jwt.sign(
+      { userId: req.user!.sub, scope, cycleId, type: 'export' },
+      process.env['JWT_SECRET']!,
+      { expiresIn: '10m' },
+    )
+
+    const url = `${process.env['API_URL']}/export/okrs?exportToken=${token}`
+    res.json({ data: { url } })
+  } catch (err) { next(err) }
+})
+
 // ─── Org endpoints ────────────────────────────────────────────────────────────
 app.get('/org/users', requireAuth, async (req, res, next) => {
   try {
@@ -158,23 +179,69 @@ app.get('/org/teams', requireAuth, async (_req, res, next) => {
 })
 
 // ─── Export endpoint ──────────────────────────────────────────────────────────
-app.get('/export/okrs', requireAuth, async (req, res, next) => {
+app.get('/export/okrs', async (req, res, next) => {
   try {
-    const { queryMany } = await import('./db/client.js')
+    const { queryMany, queryOne } = await import('./db/client.js')
     const XLSX = await import('xlsx')
-    const { cycleId, department, team, ownerId } = req.query as Record<string, string>
+    const { exportToken } = req.query as Record<string, string>
 
     const conditions: string[] = []
     const params: unknown[] = []
-    if (cycleId)    { params.push(cycleId);    conditions.push(`cycle = (SELECT name FROM cycles WHERE id = $${params.length})`) }
-    if (department) { params.push(department); conditions.push(`department = $${params.length}`) }
-    if (team)       { params.push(team);       conditions.push(`team = $${params.length}`) }
-    if (ownerId)    { params.push(ownerId);    conditions.push(`owner_email = (SELECT email FROM users WHERE id = $${params.length})`) }
 
-    // Non-admin users can only export their own hierarchy
-    if (req.user!.role !== 'admin') {
-      params.push(req.user!.email)
-      conditions.push(`owner_email = $${params.length}`)
+    if (exportToken) {
+      // Token-based auth (from export link)
+      let payload: { userId: string; scope: string; cycleId?: string; type: string }
+      try {
+        payload = jwt.verify(exportToken, process.env['JWT_SECRET']!) as typeof payload
+      } catch {
+        return res.status(401).json({ error: { message: 'Invalid or expired export token', code: 'UNAUTHORIZED' } })
+      }
+      if (payload.type !== 'export') {
+        return res.status(401).json({ error: { message: 'Invalid token type', code: 'UNAUTHORIZED' } })
+      }
+
+      const { userId, scope, cycleId } = payload
+      if (cycleId) {
+        params.push(cycleId)
+        conditions.push(`cycle = (SELECT name FROM cycles WHERE id = $${params.length})`)
+      }
+
+      if (scope === 'mine') {
+        params.push(userId)
+        conditions.push(`owner_email = (SELECT email FROM users WHERE id = $${params.length})`)
+      } else if (scope === 'team') {
+        const user = await queryOne<{ team: string }>('SELECT team FROM users WHERE id = $1', [userId])
+        if (user?.team) { params.push(user.team); conditions.push(`team = $${params.length}`) }
+      } else if (scope === 'department') {
+        const user = await queryOne<{ department: string }>('SELECT department FROM users WHERE id = $1', [userId])
+        if (user?.department) { params.push(user.department); conditions.push(`department = $${params.length}`) }
+      }
+      // scope === 'all' → no additional filter
+    } else {
+      // Bearer auth — existing behaviour
+      const header = req.headers.authorization
+      if (!header?.startsWith('Bearer ')) {
+        return res.status(401).json({ error: { message: 'Authentication required', code: 'UNAUTHORIZED' } })
+      }
+      let userPayload: any
+      try {
+        userPayload = jwt.verify(header.slice(7), process.env['JWT_SECRET']!)
+      } catch {
+        return res.status(401).json({ error: { message: 'Invalid or expired token', code: 'UNAUTHORIZED' } })
+      }
+      req.user = userPayload
+
+      const { cycleId, department, team, ownerId } = req.query as Record<string, string>
+      if (cycleId)    { params.push(cycleId);    conditions.push(`cycle = (SELECT name FROM cycles WHERE id = $${params.length})`) }
+      if (department) { params.push(department); conditions.push(`department = $${params.length}`) }
+      if (team)       { params.push(team);       conditions.push(`team = $${params.length}`) }
+      if (ownerId)    { params.push(ownerId);    conditions.push(`owner_email = (SELECT email FROM users WHERE id = $${params.length})`) }
+
+      // Non-admin users can only export their own hierarchy
+      if (req.user!.role !== 'admin') {
+        params.push(req.user!.email)
+        conditions.push(`owner_email = $${params.length}`)
+      }
     }
 
     const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : ''

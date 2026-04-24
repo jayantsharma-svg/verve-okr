@@ -7,7 +7,7 @@ import { cn, confidenceColor, confidenceLabel, progressPct, formatDate } from '@
 import {
   Search, Plus, Filter, ChevronRight, ChevronDown,
   Building2, Users, UserCircle, Target, Zap,
-  TrendingUp,
+  TrendingUp, Download, X,
 } from 'lucide-react'
 import type { Cycle } from '@okr-tool/core'
 
@@ -38,7 +38,9 @@ export default function ObjectivesPage() {
   const [filterLevel, setFilterLevel] = useState('')
   const [filterStatus, setFilterStatus] = useState('active')
   const [filterCycleId, setFilterCycleId] = useState('')
+  const [showExportModal, setShowExportModal] = useState(false)
 
+  const { data: me } = useQuery({ queryKey: ['me'], queryFn: () => api.auth.me() })
   const { data: cycles } = useQuery({ queryKey: ['cycles'], queryFn: () => api.cycles.list() })
   const activeCycle = cycles?.find(c => c.status === 'active')
 
@@ -61,6 +63,15 @@ export default function ObjectivesPage() {
 
   return (
     <div className="p-8">
+      {/* Export modal */}
+      {showExportModal && (
+        <ExportModal
+          cycles={cycles ?? []}
+          userRole={(me as any)?.role ?? 'member'}
+          onClose={() => setShowExportModal(false)}
+        />
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -69,12 +80,20 @@ export default function ObjectivesPage() {
             <p className="text-sm text-gray-500 mt-0.5">{cycle.name}</p>
           )}
         </div>
-        <a
-          href="/objectives/new"
-          className="flex items-center gap-2 bg-blue-600 text-white text-sm font-medium px-4 py-2.5 rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <Plus size={16} /> New OKR
-        </a>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowExportModal(true)}
+            className="flex items-center gap-2 border border-gray-200 text-gray-700 text-sm font-medium px-4 py-2.5 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            <Download size={15} /> Export
+          </button>
+          <a
+            href="/objectives/new"
+            className="flex items-center gap-2 bg-blue-600 text-white text-sm font-medium px-4 py-2.5 rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <Plus size={16} /> New OKR
+          </a>
+        </div>
       </div>
 
       {/* Filters bar */}
@@ -339,6 +358,136 @@ function TreeNode({
       {expanded && children.map(child => (
         <TreeNode key={child.id} obj={child} childrenOf={childrenOf} depth={depth + 1} />
       ))}
+    </div>
+  )
+}
+
+// ─── Export Modal ─────────────────────────────────────────────────────────────
+
+type ExportScope = 'mine' | 'team' | 'department' | 'all'
+
+function ExportModal({
+  cycles,
+  userRole,
+  onClose,
+}: {
+  cycles: Cycle[]
+  userRole: string
+  onClose: () => void
+}) {
+  const [scope, setScope] = useState<ExportScope>('mine')
+  const [exportCycleId, setExportCycleId] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const canExportAll = userRole === 'admin' || userRole === 'hrbp'
+
+  const SCOPE_OPTIONS: { value: ExportScope; label: string }[] = [
+    { value: 'mine',       label: 'My OKRs' },
+    { value: 'team',       label: 'My Team' },
+    { value: 'department', label: 'My Department' },
+    ...(canExportAll ? [{ value: 'all' as ExportScope, label: 'All OKRs' }] : []),
+  ]
+
+  const handleDownload = async () => {
+    setError(null)
+    setLoading(true)
+    try {
+      const result = await api.exports.exportLink(scope, exportCycleId || undefined)
+      window.open(result.url, '_blank')
+      onClose()
+    } catch (err: any) {
+      setError(err?.message ?? 'Failed to generate export link')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        onClick={onClose}
+      />
+
+      {/* Modal */}
+      <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-2">
+            <Download size={18} className="text-blue-600" />
+            <h2 className="text-base font-semibold text-gray-900">Export OKRs</h2>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Scope */}
+        <div className="mb-4">
+          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+            Scope
+          </label>
+          <div className="grid grid-cols-2 gap-2">
+            {SCOPE_OPTIONS.map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => setScope(opt.value)}
+                className={cn(
+                  'py-2 px-3 rounded-lg text-sm font-medium border transition-colors text-left',
+                  scope === opt.value
+                    ? 'bg-blue-50 border-blue-300 text-blue-700'
+                    : 'border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50',
+                )}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Cycle */}
+        <div className="mb-5">
+          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+            Cycle
+          </label>
+          <select
+            value={exportCycleId}
+            onChange={e => setExportCycleId(e.target.value)}
+            className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none bg-white focus:border-blue-400 transition-colors"
+          >
+            <option value="">Active cycle</option>
+            {cycles.map((c: Cycle) => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Error */}
+        {error && (
+          <p className="text-sm text-red-600 mb-3 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+            {error}
+          </p>
+        )}
+
+        {/* Download button */}
+        <button
+          onClick={handleDownload}
+          disabled={loading}
+          className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white text-sm font-medium px-4 py-2.5 rounded-lg hover:bg-blue-700 disabled:opacity-60 transition-colors"
+        >
+          {loading ? (
+            <span className="inline-block w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+          ) : (
+            <Download size={15} />
+          )}
+          {loading ? 'Generating link…' : 'Download XLSX'}
+        </button>
+      </div>
     </div>
   )
 }

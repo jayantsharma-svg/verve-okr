@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Switch,
   Alert,
+  Linking,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
@@ -287,6 +288,70 @@ function MeetingDigestSection() {
   )
 }
 
+// ─── Export OKRs section ─────────────────────────────────────────────────────
+type ExportScope = 'mine' | 'team' | 'department' | 'all'
+
+function ExportOKRsSection({ userRole }: { userRole: string }) {
+  const [selectedScope, setSelectedScope] = useState<ExportScope>('mine')
+  const [loading, setLoading] = useState(false)
+
+  const canExportAll = userRole === 'admin' || userRole === 'hrbp'
+
+  const SCOPE_OPTIONS: { value: ExportScope; label: string }[] = [
+    { value: 'mine',       label: 'Mine' },
+    { value: 'team',       label: 'Team' },
+    { value: 'department', label: 'Dept' },
+    ...(canExportAll ? [{ value: 'all' as ExportScope, label: 'All' }] : []),
+  ]
+
+  const handleExport = async () => {
+    setLoading(true)
+    try {
+      const result = await api.exports.exportLink(selectedScope)
+      await Linking.openURL(result.url)
+    } catch (err: any) {
+      Alert.alert('Export failed', err?.message ?? 'Could not generate export link. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <Card style={styles.cardSpacing}>
+      <Text style={styles.sectionTitle}>Export OKRs</Text>
+      <Text style={styles.exportSubtitle}>Download your OKRs as a spreadsheet</Text>
+
+      {/* Scope selector */}
+      <View style={styles.exportScopeRow}>
+        {SCOPE_OPTIONS.map((opt) => (
+          <TouchableOpacity
+            key={opt.value}
+            style={[styles.exportScopeChip, selectedScope === opt.value && styles.exportScopeChipActive]}
+            onPress={() => setSelectedScope(opt.value)}
+            activeOpacity={0.8}
+          >
+            <Text style={[styles.exportScopeText, selectedScope === opt.value && styles.exportScopeTextActive]}>
+              {opt.label}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      {/* Export button */}
+      <TouchableOpacity
+        style={[styles.saveBtn, loading && styles.btnDisabled]}
+        onPress={handleExport}
+        disabled={loading}
+        activeOpacity={0.85}
+      >
+        {loading
+          ? <ActivityIndicator size="small" color={colors.white} />
+          : <Text style={styles.saveBtnText}>Export</Text>}
+      </TouchableOpacity>
+    </Card>
+  )
+}
+
 // ─── Screen ───────────────────────────────────────────────────────────────────
 export default function ProfileScreen() {
   const router = useRouter()
@@ -373,6 +438,9 @@ export default function ProfileScreen() {
 
         {/* ── Meeting Digest ──────────────────────────────────────────── */}
         <MeetingDigestSection />
+
+        {/* ── Export OKRs ─────────────────────────────────────────────── */}
+        <ExportOKRsSection userRole={me.role} />
 
         {/* ── Sign Out ────────────────────────────────────────────────── */}
         <TouchableOpacity
@@ -596,5 +664,38 @@ const styles = StyleSheet.create({
     fontSize: font.base,
     fontWeight: '700',
     color: colors.red,
+  },
+
+  exportSubtitle: {
+    fontSize: font.sm,
+    color: colors.gray500,
+    marginBottom: spacing.md,
+  },
+  exportScopeRow: {
+    flexDirection: 'row',
+    gap: spacing.xs,
+    marginBottom: spacing.md,
+  },
+  exportScopeChip: {
+    flex: 1,
+    paddingVertical: 9,
+    borderRadius: radius.sm,
+    borderWidth: 1.5,
+    borderColor: colors.gray200,
+    backgroundColor: colors.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  exportScopeChipActive: {
+    backgroundColor: colors.primaryLight,
+    borderColor: colors.primary,
+  },
+  exportScopeText: {
+    fontSize: font.sm,
+    fontWeight: '600',
+    color: colors.gray600,
+  },
+  exportScopeTextActive: {
+    color: colors.primary,
   },
 })
