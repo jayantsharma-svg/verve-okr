@@ -61,7 +61,7 @@ router.post('/consent', async (req, res, next) => {
     }
 
     if (!consentLevel || !schedule) {
-      throw new AppError(400, 'consentLevel and schedule are required')
+      throw new AppError('BAD_REQUEST', 'consentLevel and schedule are required', 400)
     }
 
     // Get existing consent to check if consentLevel is changing from 'none'
@@ -141,7 +141,7 @@ router.post('/extractions/:id/decide', async (req, res, next) => {
     const { decision } = req.body as { decision: 'accepted' | 'rejected' }
 
     if (!decision || !['accepted', 'rejected'].includes(decision)) {
-      throw new AppError(400, "decision must be 'accepted' or 'rejected'")
+      throw new AppError('BAD_REQUEST', "decision must be 'accepted' or 'rejected'", 400)
     }
 
     // Update the extraction decision
@@ -157,7 +157,7 @@ router.post('/extractions/:id/decide', async (req, res, next) => {
     )
 
     if (!extraction) {
-      throw new AppError(404, 'Extraction not found')
+      throw new AppError('NOT_FOUND', 'Extraction not found', 404)
     }
 
     // If accepted and keyResultId exists, update the KR's current value

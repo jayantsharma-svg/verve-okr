@@ -104,7 +104,7 @@ export default function EmailIntelligencePage() {
   const extractions: Extraction[] = (extractionsData as any)?.data ?? []
 
   const decideMutation = useMutation({
-    mutationFn: ({ id, decision }: { id: string; decision: 'accepted' | 'rejected' }) =>
+    mutationFn: ({ id, decision }: { id: string; decision: 'accept' | 'reject' }) =>
       api.emailIntelligence.decide(id, decision),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['email-intelligence', 'extractions'] })
@@ -316,7 +316,7 @@ export default function EmailIntelligencePage() {
                     {/* Action buttons */}
                     <div className="flex items-center gap-2 pt-1">
                       <button
-                        onClick={() => decideMutation.mutate({ id: extraction.id, decision: 'accepted' })}
+                        onClick={() => decideMutation.mutate({ id: extraction.id, decision: 'accept' })}
                         disabled={isDeciding}
                         className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors"
                       >
@@ -328,7 +328,7 @@ export default function EmailIntelligencePage() {
                         Apply
                       </button>
                       <button
-                        onClick={() => decideMutation.mutate({ id: extraction.id, decision: 'rejected' })}
+                        onClick={() => decideMutation.mutate({ id: extraction.id, decision: 'reject' })}
                         disabled={isDeciding}
                         className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50 transition-colors"
                       >

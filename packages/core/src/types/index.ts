@@ -1,6 +1,6 @@
 // ─── Enums ────────────────────────────────────────────────────────────────────
 
-export type UserRole = 'admin' | 'dept_lead' | 'team_lead' | 'member'
+export type UserRole = 'admin' | 'hrbp' | 'dept_lead' | 'team_lead' | 'member'
 
 export type OkrLevel = 'company' | 'department' | 'team' | 'individual'
 

@@ -33,7 +33,8 @@ export function requireAuth(req: Request, _res: Response, next: NextFunction) {
 // ─── Role-based access guards ─────────────────────────────────────────────────
 
 const ROLE_WEIGHT: Record<UserRole, number> = {
-  admin: 4,
+  admin: 5,
+  hrbp: 4,
   dept_lead: 3,
   team_lead: 2,
   member: 1,
@@ -62,15 +63,13 @@ export function requireMinRole(minRole: UserRole) {
 // ─── JWT helpers ──────────────────────────────────────────────────────────────
 
 export function signAccessToken(payload: Omit<AuthTokenPayload, 'iat' | 'exp'>): string {
-  return jwt.sign(payload, JWT_SECRET, {
-    expiresIn: (process.env['JWT_EXPIRES_IN'] ?? '15m') as string,
-  })
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: (process.env['JWT_EXPIRES_IN'] ?? '15m') as any })
 }
 
 export function signRefreshToken(userId: string): string {
-  return jwt.sign({ sub: userId, type: 'refresh' }, JWT_SECRET, {
-    expiresIn: (process.env['REFRESH_TOKEN_EXPIRES_IN'] ?? '7d') as string,
-  })
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return jwt.sign({ sub: userId, type: 'refresh' }, JWT_SECRET, { expiresIn: (process.env['REFRESH_TOKEN_EXPIRES_IN'] ?? '7d') as any })
 }
 
 export function verifyRefreshToken(token: string): { sub: string } {

@@ -113,10 +113,12 @@ function getNotificationText(payload: NotificationPayload): string {
   }
 }
 
-function buildSlackBlocks(payload: NotificationPayload): object[] {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function buildSlackBlocks(payload: NotificationPayload): any[] {
   const frontendUrl = process.env['FRONTEND_URL']
   const text = getNotificationText(payload)
-  const blocks: object[] = [
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const blocks: any[] = [
     { type: 'section', text: { type: 'mrkdwn', text } },
   ]
 

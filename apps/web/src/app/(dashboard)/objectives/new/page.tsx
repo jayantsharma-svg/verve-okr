@@ -449,7 +449,7 @@ export default function NewObjectivePage() {
             </div>
           </div>
 
-          {form.level !== 'individual' && (
+          {form.level && form.level !== 'individual' && (
             <div className="flex items-start gap-2 p-3 bg-amber-50 rounded-lg border border-amber-100 text-xs text-amber-700">
               <AlertCircle size={14} className="shrink-0 mt-0.5" />
               <span>

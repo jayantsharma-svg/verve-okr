@@ -3,7 +3,10 @@ const { App, ExpressReceiver } = bolt
 import { registerCommands } from './commands.js'
 import { registerActions } from './actions.js'
 
-export function initSlack(expressApp: import('express').Application): App | null {
+// Use InstanceType to avoid using the class as a type directly
+type SlackApp = InstanceType<typeof App>
+
+export function initSlack(expressApp: import('express').Application): SlackApp | null {
   const token         = process.env['SLACK_BOT_TOKEN']
   const signingSecret = process.env['SLACK_SIGNING_SECRET']
   const appToken      = process.env['SLACK_APP_TOKEN']
@@ -13,18 +16,19 @@ export function initSlack(expressApp: import('express').Application): App | null
     return null
   }
 
-  let app: App
+  let app: SlackApp
 
   if (appToken) {
     // Socket Mode (dev / staging) — no HTTP receiver needed
     app = new App({ token, signingSecret, socketMode: true, appToken })
   } else {
-    // HTTP mode (production) — mount on the shared Express instance
+    // HTTP mode (production) — mount receiver router onto the shared Express app
     const receiver = new ExpressReceiver({
       signingSecret,
-      app: expressApp,
-      path: '/slack/events',
+      endpoints: '/slack/events',
     })
+    // Mount the receiver's router on the Express app
+    expressApp.use('/slack', receiver.router)
     app = new App({ token, receiver })
   }
 
@@ -35,7 +39,7 @@ export function initSlack(expressApp: import('express').Application): App | null
   if (appToken) {
     app.start()
       .then(() => console.log('[Slack] Bot connected via Socket Mode'))
-      .catch((err) => console.error('[Slack] Failed to start Socket Mode:', err))
+      .catch((err: Error) => console.error('[Slack] Failed to start Socket Mode:', err))
   } else {
     console.log('[Slack] Bot registered at POST /slack/events (HTTP mode)')
   }

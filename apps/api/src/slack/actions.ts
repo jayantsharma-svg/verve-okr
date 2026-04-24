@@ -79,7 +79,8 @@ export function registerActions(app: App): void {
       await slack.chat.postMessage({
         channel: slackUserId,
         text:    `✅ Check-in recorded for *${kr.title}*! New value: ${newValue}`,
-        blocks: [
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        blocks: ([
           {
             type: 'section',
             text: {
@@ -91,7 +92,7 @@ export function registerActions(app: App): void {
             type: 'section',
             text: { type: 'mrkdwn', text: `*Note:* ${note}` },
           }] : []),
-        ],
+        ] as any),
       })
     } catch (err) {
       console.error('[Slack] checkin_submit error:', err)

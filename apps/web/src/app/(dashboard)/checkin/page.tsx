@@ -104,7 +104,7 @@ export default function CheckinPage() {
 
   const { data: objectives, isLoading } = useQuery({
     queryKey: ['objectives', 'mine', userId],
-    queryFn: () => api.objectives.list({ ownerId: userId }),
+    queryFn: () => api.objectives.list({ ownerId: userId! }),
     enabled: !!userId,
   })
 
