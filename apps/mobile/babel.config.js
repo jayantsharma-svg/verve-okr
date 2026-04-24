@@ -4,5 +4,8 @@ module.exports = function (api) {
     presets: ['babel-preset-expo'],
     // Path aliases (@/*) are handled via tsconfig.json + metro.config.js
     // — no babel-plugin-module-resolver needed for Expo SDK 51+
+    //
+    // react-native-reanimated plugin MUST be last in the plugins list
+    plugins: ['react-native-reanimated/plugin'],
   }
 }
