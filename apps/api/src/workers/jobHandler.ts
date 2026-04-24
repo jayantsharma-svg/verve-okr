@@ -7,6 +7,7 @@ import { runEmailScrape, runScheduledEmailScrapes } from './emailScrape.js'
 import { processBulkImport } from './bulkImport.js'
 import { rebuildUserHierarchy, syncGoogleDirectory } from './orgSync.js'
 import { exportToSheets } from './sheetsExport.js'
+import { importFromSheets } from './sheetsImport.js'
 import { sendNotification } from '../services/notifications.js'
 import { runMeetingDigest, runAllDigests } from './meetingDigest.js'
 import { sendCheckinReminders } from './checkinReminder.js'
@@ -30,6 +31,9 @@ export async function handleJob(type: string, payload: unknown): Promise<void> {
       break
     case 'sheets_export':
       await exportToSheets(payload as { exportId?: string })
+      break
+    case 'sheets_import':
+      await importFromSheets({ triggeredBy: (payload as any)?.triggeredBy })
       break
     case 'notification':
       await sendNotification(payload as { userId: string; type: string; data: Record<string, unknown> })

@@ -55,7 +55,49 @@ steps:
       - --allow-unauthenticated
       - --port=8080
       - --set-secrets=DATABASE_URL=DATABASE_URL:latest,JWT_SECRET=JWT_SECRET:latest,GOOGLE_CLIENT_ID=GOOGLE_CLIENT_ID:latest,GOOGLE_CLIENT_SECRET=GOOGLE_CLIENT_SECRET:latest,GOOGLE_SERVICE_ACCOUNT_KEY_BASE64=GOOGLE_SERVICE_ACCOUNT_KEY_BASE64:latest,ANTHROPIC_API_KEY=ANTHROPIC_API_KEY:latest,INTERNAL_TASKS_SECRET=INTERNAL_TASKS_SECRET:latest
-      - --set-env-vars=NODE_ENV=production,GOOGLE_WORKSPACE_DOMAIN=capillarytech.com,GOOGLE_SERVICE_ACCOUNT_EMAIL=verve-backend@verve.iam.gserviceaccount.com,GOOGLE_ADMIN_EMAIL=admin@capillarytech.com,FRONTEND_URL=https://verve.capillarytech.com,API_URL=https://api.verve.capillarytech.com,INTERNAL_API_URL=https://api.verve.capillarytech.com,GOOGLE_REDIRECT_URI=https://api.verve.capillarytech.com/auth/google/callback,GCP_PROJECT_ID=$PROJECT_ID,GCP_TASKS_QUEUE_NAME=Verve-jobs,GCP_TASKS_LOCATION=us-central1,GCS_BUCKET_NAME=okr-tool-files,GCS_PROJECT_ID=$PROJECT_ID
+      - --set-env-vars=NODE_ENV=production,GOOGLE_WORKSPACE_DOMAIN=capillarytech.com,GOOGLE_SERVICE_ACCOUNT_EMAIL=verve-backend@verve.iam.gserviceaccount.com,GOOGLE_ADMIN_EMAIL=admin@capillarytech.com,GOOGLE_SHEETS_ADMIN_EMAILS=admin@capillarytech.com,FRONTEND_URL=https://verve.capillarytech.com,API_URL=https://api.verve.capillarytech.com,INTERNAL_API_URL=https://api.verve.capillarytech.com,GOOGLE_REDIRECT_URI=https://api.verve.capillarytech.com/auth/google/callback,GCP_PROJECT_ID=$PROJECT_ID,GCP_TASKS_QUEUE_NAME=Verve-jobs,GCP_TASKS_LOCATION=us-central1,GCS_BUCKET_NAME=okr-tool-files,GCS_PROJECT_ID=$PROJECT_ID
+
+  # ── Create / update Cloud Scheduler jobs ────────────────────────────────────
+  # Sheets export:  00:00 UTC daily  →  POST /internal/tasks/run {type:"sheets_export"}
+  # Sheets import:  06:00 UTC daily  →  POST /internal/tasks/run {type:"sheets_import"}
+  # Check-in reminders: 08:00 UTC every Monday
+  # Org sync:       01:00 UTC daily
+  # Email scrape:   08:00 UTC daily
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: setup-scheduler
+    waitFor: ['deploy-api']
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        set -e
+        SECRET=$(gcloud secrets versions access latest --secret=INTERNAL_TASKS_SECRET)
+        API=https://api.verve.capillarytech.com/internal/tasks/run
+        HDR="Content-Type=application/json,X-Tasks-Secret=$${SECRET}"
+        LOC=us-central1
+
+        create_or_update() {
+          local NAME=$1 SCHEDULE=$2 BODY=$3
+          if gcloud scheduler jobs describe $$NAME --location=$$LOC --quiet > /dev/null 2>&1; then
+            gcloud scheduler jobs update http $$NAME \
+              --location=$$LOC --schedule="$$SCHEDULE" --time-zone=UTC \
+              --uri=$$API --message-body="$$BODY" --headers="$$HDR" \
+              --http-method=POST --quiet
+            echo "[Scheduler] Updated job: $$NAME"
+          else
+            gcloud scheduler jobs create http $$NAME \
+              --location=$$LOC --schedule="$$SCHEDULE" --time-zone=UTC \
+              --uri=$$API --message-body="$$BODY" --headers="$$HDR" \
+              --http-method=POST --quiet
+            echo "[Scheduler] Created job: $$NAME"
+          fi
+        }
+
+        create_or_update okr-sheets-export  "0 0 * * *"   '{"type":"sheets_export","payload":{}}'
+        create_or_update okr-sheets-import  "0 6 * * *"   '{"type":"sheets_import","payload":{}}'
+        create_or_update okr-checkin-remind "0 8 * * 1"   '{"type":"checkin_reminder","payload":{}}'
+        create_or_update okr-org-sync       "0 1 * * *"   '{"type":"org_sync","payload":{}}'
+        create_or_update okr-email-scrape   "0 8 * * *"   '{"type":"scheduled_email_scrape","payload":{}}'
 
   # ── Deploy Web to Cloud Run ──────────────────────────────────────────────────
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'

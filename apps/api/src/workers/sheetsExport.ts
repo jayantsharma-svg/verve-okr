@@ -5,20 +5,79 @@
  *   "OKR Data"  — full read-only export of every OKR row (sourced from v_okr_export)
  *   "Updates"   — editable template managers fill in with progress / status changes;
  *                 read back by sheetsImport.ts
+ *
+ * On first run the spreadsheet is auto-created in the service account's own Drive
+ * and shared (writer access) with every email in GOOGLE_SHEETS_ADMIN_EMAILS.
  */
-import { google, sheets_v4 } from 'googleapis'
+import { google, sheets_v4, drive_v3 } from 'googleapis'
 import { queryMany, queryOne, query } from '../db/client.js'
 
 const CONFIG_KEY = 'sheets_spreadsheet_id'
 
+// ─── Auth ─────────────────────────────────────────────────────────────────────
+
+function buildAuth() {
+  const keyBase64 = process.env['GOOGLE_SERVICE_ACCOUNT_KEY_BASE64']
+  if (!keyBase64) throw new Error('GOOGLE_SERVICE_ACCOUNT_KEY_BASE64 not set')
+  const keyJson = JSON.parse(Buffer.from(keyBase64, 'base64').toString('utf8'))
+  return new google.auth.GoogleAuth({
+    credentials: keyJson,
+    scopes: [
+      'https://www.googleapis.com/auth/spreadsheets',
+      'https://www.googleapis.com/auth/drive.file',   // manage files this SA created
+    ],
+  })
+}
+
+async function getSheetsClient(): Promise<sheets_v4.Sheets> {
+  return google.sheets({ version: 'v4', auth: buildAuth() })
+}
+
+async function getDriveClient(): Promise<drive_v3.Drive> {
+  return google.drive({ version: 'v3', auth: buildAuth() })
+}
+
+// ─── Drive sharing ────────────────────────────────────────────────────────────
+
 /**
- * Returns the spreadsheet ID to use for OKR sync.
- * Priority: env var → DB config → auto-create (stored back to DB).
- * The created sheet lives in the service account's own Drive — completely
- * private, invisible to every Workspace user.
+ * Share the spreadsheet (writer access) with every email in
+ * GOOGLE_SHEETS_ADMIN_EMAILS (comma-separated). Called once on first creation.
+ * Failures are logged as warnings — they don't abort the export.
  */
-async function getOrCreateSpreadsheetId(sheets: sheets_v4.Sheets): Promise<string> {
-  // 1. Explicit env override (useful for testing / migration)
+async function shareWithAdmins(drive: drive_v3.Drive, spreadsheetId: string): Promise<void> {
+  const emailsEnv = process.env['GOOGLE_SHEETS_ADMIN_EMAILS'] ?? ''
+  const emails = emailsEnv.split(',').map(e => e.trim()).filter(Boolean)
+
+  if (emails.length === 0) {
+    console.warn('[SheetsExport] GOOGLE_SHEETS_ADMIN_EMAILS not set — sheet will not be visible to anyone')
+    return
+  }
+
+  for (const email of emails) {
+    try {
+      await drive.permissions.create({
+        fileId: spreadsheetId,
+        sendNotificationEmail: false,
+        requestBody: { type: 'user', role: 'writer', emailAddress: email },
+      })
+      console.log(`[SheetsExport] Shared spreadsheet with ${email}`)
+    } catch (err: any) {
+      console.warn(`[SheetsExport] Could not share with ${email}: ${err.message}`)
+    }
+  }
+}
+
+// ─── Spreadsheet ID resolution ────────────────────────────────────────────────
+
+/**
+ * Returns the spreadsheet ID.
+ * Priority: env var → DB config → auto-create (stored back to DB + shared with admins).
+ */
+async function getOrCreateSpreadsheetId(
+  sheets: sheets_v4.Sheets,
+  drive: drive_v3.Drive,
+): Promise<string> {
+  // 1. Explicit env override (useful for testing / migration to a pre-existing sheet)
   if (process.env['GOOGLE_SHEETS_EXPORT_ID']) {
     return process.env['GOOGLE_SHEETS_EXPORT_ID']
   }
@@ -30,41 +89,26 @@ async function getOrCreateSpreadsheetId(sheets: sheets_v4.Sheets): Promise<strin
   )
   if (row) return row.value
 
-  // 3. First run — create a new spreadsheet and persist its ID
+  // 3. First run — create a new spreadsheet, persist its ID, and share with admins
   const res = await sheets.spreadsheets.create({
-    requestBody: {
-      properties: { title: 'Verve OKR Sync' },
-    },
+    requestBody: { properties: { title: 'Verve OKR Sync' } },
   })
   const id = res.data.spreadsheetId!
+
   await query(
     `INSERT INTO system_config (key, value) VALUES ($1, $2)
      ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()`,
     [CONFIG_KEY, id],
   )
   console.log(`[SheetsExport] Created new spreadsheet: ${id}`)
+
+  // Share with configured admin emails so they can edit the Updates tab
+  await shareWithAdmins(drive, id)
+
   return id
 }
 
-// ─── Auth ─────────────────────────────────────────────────────────────────────
-
-async function getSheetsClient(): Promise<sheets_v4.Sheets> {
-  const keyBase64 = process.env['GOOGLE_SERVICE_ACCOUNT_KEY_BASE64']
-  if (!keyBase64) throw new Error('GOOGLE_SERVICE_ACCOUNT_KEY_BASE64 not set')
-
-  // Authenticate as the service account directly — no impersonation.
-  // Files created this way live in the service account's own Drive space,
-  // which is invisible to every Workspace user. No sharing required and
-  // no org sharing restrictions apply.
-  const keyJson = JSON.parse(Buffer.from(keyBase64, 'base64').toString('utf8'))
-  const auth = new google.auth.GoogleAuth({
-    credentials: keyJson,
-    scopes: ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive.file'],
-  })
-  return google.sheets({ version: 'v4', auth })
-}
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// ─── Sheet tab helpers ────────────────────────────────────────────────────────
 
 /** Ensure a sheet tab with the given title exists; returns its sheetId. */
 async function ensureSheet(
@@ -78,9 +122,7 @@ async function ensureSheet(
 
   const res = await sheets.spreadsheets.batchUpdate({
     spreadsheetId,
-    requestBody: {
-      requests: [{ addSheet: { properties: { title } } }],
-    },
+    requestBody: { requests: [{ addSheet: { properties: { title } } }] },
   })
   return res.data.replies![0].addSheet!.properties!.sheetId!
 }
@@ -88,13 +130,9 @@ async function ensureSheet(
 /** Header colour — steel blue */
 const HEADER_BG = { red: 0.263, green: 0.396, blue: 0.643 }
 
-/** Build a format-header + freeze request for a sheet tab. */
-function headerRequests(
-  sheetId: number,
-  columnCount: number,
-): sheets_v4.Schema$Request[] {
+/** Build format-header + freeze + auto-resize requests for a tab. */
+function headerRequests(sheetId: number, columnCount: number): sheets_v4.Schema$Request[] {
   return [
-    // Bold white text on blue background for row 0
     {
       repeatCell: {
         range: { sheetId, startRowIndex: 0, endRowIndex: 1, startColumnIndex: 0, endColumnIndex: columnCount },
@@ -107,14 +145,12 @@ function headerRequests(
         fields: 'userEnteredFormat(backgroundColor,textFormat)',
       },
     },
-    // Freeze first row
     {
       updateSheetProperties: {
         properties: { sheetId, gridProperties: { frozenRowCount: 1 } },
         fields: 'gridProperties.frozenRowCount',
       },
     },
-    // Auto-resize all columns
     {
       autoResizeDimensions: {
         dimensions: { sheetId, dimension: 'COLUMNS', startIndex: 0, endIndex: columnCount },
@@ -132,7 +168,8 @@ export interface ExportResult {
 
 export async function exportToSheets(_opts: { exportId?: string }): Promise<ExportResult> {
   const sheets = await getSheetsClient()
-  const spreadsheetId = await getOrCreateSpreadsheetId(sheets)
+  const drive  = await getDriveClient()
+  const spreadsheetId = await getOrCreateSpreadsheetId(sheets, drive)
 
   // ── 1. Fetch all OKR rows ────────────────────────────────────────────────
   const rows = await queryMany(
@@ -175,7 +212,6 @@ export async function exportToSheets(_opts: { exportId?: string }): Promise<Expo
   // ── 3. Write "Updates" tab (editable template) ───────────────────────────
   const updatesSheetId = await ensureSheet(sheets, spreadsheetId, 'Updates')
 
-  // Build one row per key-result (or one per objective if no KRs)
   const updatesHeaders = [
     'Objective ID',     // A — reference key (do not edit)
     'Objective Title',  // B — read-only reference
@@ -187,19 +223,18 @@ export async function exportToSheets(_opts: { exportId?: string }): Promise<Expo
     'Notes',            // H — EDITABLE: free text, recorded as check-in note
   ]
 
-  // Build one row per KR; if an objective has no KRs, still emit one row for status edits
   const objectivesSeen = new Set<string>()
   const updatesRows: (string | number | null)[][] = rows.map((r: any) => {
     const isFirstForObjective = !objectivesSeen.has(r.objective_id)
     objectivesSeen.add(r.objective_id)
     return [
       r.objective_id,
-      isFirstForObjective ? r.objective_title : '',   // show title only once per objective
-      isFirstForObjective ? r.objective_status : '',  // editable on first row
-      r.key_result_id ?? '',
+      isFirstForObjective ? r.objective_title  : '',
+      isFirstForObjective ? r.objective_status : '',
+      r.key_result_id    ?? '',
       r.key_result_title ?? '',
-      r.current_value ?? '',
-      r.confidence ?? '',
+      r.current_value    ?? '',
+      r.confidence       ?? '',
       '',  // Notes — always blank on export
     ]
   })

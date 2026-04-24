@@ -22,6 +22,7 @@ import { camelCaseResponse } from './middleware/camelCase.js'
 import { initSlack } from './slack/index.js'
 import { sendCheckinReminders } from './workers/checkinReminder.js'
 import { exportToSheets } from './workers/sheetsExport.js'
+import { importFromSheets } from './workers/sheetsImport.js'
 import { syncGoogleDirectory } from './workers/orgSync.js'
 import { runScheduledEmailScrapes } from './workers/emailScrape.js'
 
@@ -297,25 +298,33 @@ function scheduleJobs() {
     sendCheckinReminders().catch(err => console.error('[Scheduler] checkin_reminder failed:', err))
   }, WEEK_MS)
 
-  // Google Sheets export — nightly
+  const HOUR_MS  =  60 * 60 * 1000
+
+  // Google Sheets export — 00:00 UTC daily (prod); every 24h in dev
   setInterval(() => {
-    console.log('[Scheduler] Running nightly Sheets export…')
+    console.log('[Scheduler] Running Sheets export…')
     exportToSheets({}).catch(err => console.error('[Scheduler] sheets_export failed:', err))
   }, DAY_MS)
 
-  // Google Directory org sync — nightly (runs after sheets so hierarchy is fresh)
+  // Google Sheets import — 06:00 UTC daily (prod); 6h after export in dev
+  setInterval(() => {
+    console.log('[Scheduler] Running Sheets import…')
+    importFromSheets({}).catch(err => console.error('[Scheduler] sheets_import failed:', err))
+  }, DAY_MS)
+
+  // Google Directory org sync — 01:00 UTC daily
   setInterval(() => {
     console.log('[Scheduler] Running nightly org sync…')
     syncGoogleDirectory().catch(err => console.error('[Scheduler] org_sync failed:', err))
   }, DAY_MS)
 
-  // Email scrape — daily, checks each user's schedule preference
+  // Email scrape — 08:00 UTC daily
   setInterval(() => {
     console.log('[Scheduler] Running scheduled email scrapes…')
     runScheduledEmailScrapes().catch(err => console.error('[Scheduler] scheduled_email_scrape failed:', err))
   }, DAY_MS)
 
-  console.log('[Scheduler] Dev jobs scheduled (check-in: weekly | sheets: nightly | org sync: nightly | email scrape: daily)')
+  console.log('[Scheduler] Dev jobs scheduled (check-in: weekly | sheets export: 00:00 UTC | sheets import: 06:00 UTC | org sync: 01:00 UTC | email scrape: 08:00 UTC)')
 }
 
 export default app
