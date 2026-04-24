@@ -7,7 +7,44 @@
  *                 read back by sheetsImport.ts
  */
 import { google, sheets_v4 } from 'googleapis'
-import { queryMany } from '../db/client.js'
+import { queryMany, queryOne, query } from '../db/client.js'
+
+const CONFIG_KEY = 'sheets_spreadsheet_id'
+
+/**
+ * Returns the spreadsheet ID to use for OKR sync.
+ * Priority: env var → DB config → auto-create (stored back to DB).
+ * The created sheet lives in the service account's own Drive — completely
+ * private, invisible to every Workspace user.
+ */
+async function getOrCreateSpreadsheetId(sheets: sheets_v4.Sheets): Promise<string> {
+  // 1. Explicit env override (useful for testing / migration)
+  if (process.env['GOOGLE_SHEETS_EXPORT_ID']) {
+    return process.env['GOOGLE_SHEETS_EXPORT_ID']
+  }
+
+  // 2. Previously auto-created ID stored in DB
+  const row = await queryOne<{ value: string }>(
+    'SELECT value FROM system_config WHERE key = $1',
+    [CONFIG_KEY],
+  )
+  if (row) return row.value
+
+  // 3. First run — create a new spreadsheet and persist its ID
+  const res = await sheets.spreadsheets.create({
+    requestBody: {
+      properties: { title: 'Verve OKR Sync' },
+    },
+  })
+  const id = res.data.spreadsheetId!
+  await query(
+    `INSERT INTO system_config (key, value) VALUES ($1, $2)
+     ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()`,
+    [CONFIG_KEY, id],
+  )
+  console.log(`[SheetsExport] Created new spreadsheet: ${id}`)
+  return id
+}
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 
@@ -15,17 +52,14 @@ async function getSheetsClient(): Promise<sheets_v4.Sheets> {
   const keyBase64 = process.env['GOOGLE_SERVICE_ACCOUNT_KEY_BASE64']
   if (!keyBase64) throw new Error('GOOGLE_SERVICE_ACCOUNT_KEY_BASE64 not set')
 
-  // Use domain-wide delegation to impersonate a Workspace user who owns/has
-  // access to the sheet — no need to share the sheet with the service account
-  // email directly (avoids external-domain sharing restrictions).
-  const adminEmail = process.env['GOOGLE_ADMIN_EMAIL']
-  if (!adminEmail) throw new Error('GOOGLE_ADMIN_EMAIL not set')
-
+  // Authenticate as the service account directly — no impersonation.
+  // Files created this way live in the service account's own Drive space,
+  // which is invisible to every Workspace user. No sharing required and
+  // no org sharing restrictions apply.
   const keyJson = JSON.parse(Buffer.from(keyBase64, 'base64').toString('utf8'))
   const auth = new google.auth.GoogleAuth({
     credentials: keyJson,
-    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-    clientOptions: { subject: adminEmail },
+    scopes: ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive.file'],
   })
   return google.sheets({ version: 'v4', auth })
 }
@@ -97,10 +131,8 @@ export interface ExportResult {
 }
 
 export async function exportToSheets(_opts: { exportId?: string }): Promise<ExportResult> {
-  const spreadsheetId = process.env['GOOGLE_SHEETS_EXPORT_ID']
-  if (!spreadsheetId) throw new Error('GOOGLE_SHEETS_EXPORT_ID not configured')
-
   const sheets = await getSheetsClient()
+  const spreadsheetId = await getOrCreateSpreadsheetId(sheets)
 
   // ── 1. Fetch all OKR rows ────────────────────────────────────────────────
   const rows = await queryMany(

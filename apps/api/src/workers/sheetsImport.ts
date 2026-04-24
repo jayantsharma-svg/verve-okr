@@ -22,19 +22,27 @@ async function getSheetsClient() {
   const keyBase64 = process.env['GOOGLE_SERVICE_ACCOUNT_KEY_BASE64']
   if (!keyBase64) throw new Error('GOOGLE_SERVICE_ACCOUNT_KEY_BASE64 not set')
 
-  // Use domain-wide delegation to impersonate a Workspace user who owns/has
-  // access to the sheet — no need to share the sheet with the service account
-  // email directly (avoids external-domain sharing restrictions).
-  const adminEmail = process.env['GOOGLE_ADMIN_EMAIL']
-  if (!adminEmail) throw new Error('GOOGLE_ADMIN_EMAIL not set')
-
+  // Authenticate as the service account directly (no impersonation).
+  // The spreadsheet lives in the service account's own Drive, invisible to all
+  // Workspace users — no org sharing restriction applies.
   const keyJson = JSON.parse(Buffer.from(keyBase64, 'base64').toString('utf8'))
   const auth = new google.auth.GoogleAuth({
     credentials: keyJson,
     scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-    clientOptions: { subject: adminEmail },
   })
   return google.sheets({ version: 'v4', auth })
+}
+
+const CONFIG_KEY = 'sheets_spreadsheet_id'
+
+async function getSpreadsheetId(): Promise<string> {
+  if (process.env['GOOGLE_SHEETS_EXPORT_ID']) return process.env['GOOGLE_SHEETS_EXPORT_ID']
+  const row = await queryOne<{ value: string }>(
+    'SELECT value FROM system_config WHERE key = $1',
+    [CONFIG_KEY],
+  )
+  if (!row) throw new Error('No spreadsheet configured — run an export first.')
+  return row.value
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -50,9 +58,7 @@ export interface ImportResult {
 // ─── Import ───────────────────────────────────────────────────────────────────
 
 export async function importFromSheets(opts: { triggeredBy?: string }): Promise<ImportResult> {
-  const spreadsheetId = process.env['GOOGLE_SHEETS_EXPORT_ID']
-  if (!spreadsheetId) throw new Error('GOOGLE_SHEETS_EXPORT_ID not configured')
-
+  const spreadsheetId = await getSpreadsheetId()
   const sheets = await getSheetsClient()
 
   // Read the entire Updates tab

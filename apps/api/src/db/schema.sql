@@ -588,3 +588,15 @@ CREATE TABLE IF NOT EXISTS sheets_sync_log (
   completed_at    TIMESTAMPTZ
 );
 CREATE INDEX IF NOT EXISTS idx_sheets_sync_log_started ON sheets_sync_log(started_at DESC);
+
+-- =============================================================================
+-- SYSTEM CONFIG
+-- =============================================================================
+-- Generic key/value store for runtime-generated config that cannot be known at
+-- deploy time (e.g. the spreadsheet ID created by the service account on first
+-- export — the file lives in the SA's own Drive and is never shared).
+CREATE TABLE IF NOT EXISTS system_config (
+  key         TEXT        PRIMARY KEY,
+  value       TEXT        NOT NULL,
+  updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
