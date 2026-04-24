@@ -22,9 +22,19 @@ export async function syncGoogleDirectory(): Promise<void> {
 
   const keyJson = JSON.parse(Buffer.from(keyBase64, 'base64').toString('utf8'))
 
+  // Domain-wide delegation requires impersonating a Workspace admin.
+  // GOOGLE_ADMIN_EMAIL must be a super-admin address in the same domain.
+  const adminEmail = process.env['GOOGLE_ADMIN_EMAIL']
+  if (!adminEmail) {
+    console.warn('[OrgSync] GOOGLE_ADMIN_EMAIL not set — skipping Directory sync.')
+    return
+  }
+
   const auth = new google.auth.GoogleAuth({
     credentials: keyJson,
     scopes: ['https://www.googleapis.com/auth/admin.directory.user.readonly'],
+    // subject = the admin user to impersonate via domain-wide delegation
+    clientOptions: { subject: adminEmail },
   })
 
   const admin = google.admin({ version: 'directory_v1', auth })

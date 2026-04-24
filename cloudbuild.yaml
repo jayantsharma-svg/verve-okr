@@ -55,7 +55,7 @@ steps:
       - --allow-unauthenticated
       - --port=8080
       - --set-secrets=DATABASE_URL=DATABASE_URL:latest,JWT_SECRET=JWT_SECRET:latest,GOOGLE_CLIENT_ID=GOOGLE_CLIENT_ID:latest,GOOGLE_CLIENT_SECRET=GOOGLE_CLIENT_SECRET:latest,GOOGLE_SERVICE_ACCOUNT_KEY_BASE64=GOOGLE_SERVICE_ACCOUNT_KEY_BASE64:latest,ANTHROPIC_API_KEY=ANTHROPIC_API_KEY:latest,INTERNAL_TASKS_SECRET=INTERNAL_TASKS_SECRET:latest
-      - --set-env-vars=NODE_ENV=production,GOOGLE_WORKSPACE_DOMAIN=capillarytech.com,GOOGLE_SERVICE_ACCOUNT_EMAIL=verve-backend@verve.iam.gserviceaccount.com,FRONTEND_URL=https://verve.capillarytech.com,API_URL=https://api.verve.capillarytech.com,INTERNAL_API_URL=https://api.verve.capillarytech.com,GOOGLE_REDIRECT_URI=https://api.verve.capillarytech.com/auth/google/callback,GCP_PROJECT_ID=$PROJECT_ID,GCP_TASKS_QUEUE_NAME=Verve-jobs,GCP_TASKS_LOCATION=us-central1,GCS_BUCKET_NAME=okr-tool-files,GCS_PROJECT_ID=$PROJECT_ID
+      - --set-env-vars=NODE_ENV=production,GOOGLE_WORKSPACE_DOMAIN=capillarytech.com,GOOGLE_SERVICE_ACCOUNT_EMAIL=verve-backend@verve.iam.gserviceaccount.com,GOOGLE_ADMIN_EMAIL=admin@capillarytech.com,FRONTEND_URL=https://verve.capillarytech.com,API_URL=https://api.verve.capillarytech.com,INTERNAL_API_URL=https://api.verve.capillarytech.com,GOOGLE_REDIRECT_URI=https://api.verve.capillarytech.com/auth/google/callback,GCP_PROJECT_ID=$PROJECT_ID,GCP_TASKS_QUEUE_NAME=Verve-jobs,GCP_TASKS_LOCATION=us-central1,GCS_BUCKET_NAME=okr-tool-files,GCS_PROJECT_ID=$PROJECT_ID
 
   # ── Deploy Web to Cloud Run ──────────────────────────────────────────────────
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
