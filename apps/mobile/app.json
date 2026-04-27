@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Verve",
+    "name": "Verve by Capillary",
     "slug": "verve-okr",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -9,7 +9,7 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#2563eb"
+      "backgroundColor": "#0F766E"
     },
     "ios": {
       "supportsTablet": false,
@@ -25,10 +25,9 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#2563eb"
+        "backgroundColor": "#0F766E"
       },
       "package": "com.capillary.verve",
-      "edgeToEdgeLayoutEnabled": true,
       "permissions": [
         "android.permission.INTERNET",
         "android.permission.ACCESS_NETWORK_STATE"

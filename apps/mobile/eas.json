@@ -35,7 +35,8 @@
         "simulator": true
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://api.verve.capillarytech.com"
+        "EXPO_PUBLIC_API_URL": "https://api.verve.capillarytech.com",
+        "EXPO_PUBLIC_SHOW_DEV_PANEL": "true"
       }
     },
     "production": {
@@ -51,8 +52,8 @@
   "submit": {
     "production": {
       "ios": {
-        "appleId": "dev@capillary.com",
-        "ascAppId": "YOUR_APP_STORE_CONNECT_APP_ID",
+        "appleId": "jayant.sharma@capillarytech.com",
+        "ascAppId": "6764087210",
         "appleTeamId": "3RGFD99U34"
       },
       "android": {
