@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy – Verve by Capillary</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --brand:       #0F766E;
+      --brand-dark:  #0A5C55;
+      --brand-light: #CCFBF1;
+      --text:        #111827;
+      --muted:       #6B7280;
+      --border:      #E5E7EB;
+      --bg:          #FAFAFA;
+      --white:       #FFFFFF;
+      --max-width:   860px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                   "Helvetica Neue", Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.7;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    /* ── Header ─────────────────────────────────────────────── */
+    header {
+      background: var(--brand);
+      color: var(--white);
+      padding: 48px 24px 40px;
+      text-align: center;
+    }
+
+    .header-logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      text-decoration: none;
+    }
+
+    .logo-mark {
+      width: 44px;
+      height: 44px;
+      background: var(--white);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo-mark svg { width: 28px; height: 28px; }
+
+    .logo-name {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--white);
+      letter-spacing: -0.3px;
+    }
+
+    .logo-company {
+      font-size: 11px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.75);
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      margin-top: 1px;
+    }
+
+    header h1 {
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 10px;
+    }
+
+    header p.subtitle {
+      font-size: 15px;
+      color: rgba(255,255,255,0.82);
+      max-width: 520px;
+      margin: 0 auto;
+    }
+
+    /* ── Meta bar ───────────────────────────────────────────── */
+    .meta-bar {
+      background: var(--brand-dark);
+      color: rgba(255,255,255,0.80);
+      font-size: 13px;
+      text-align: center;
+      padding: 10px 24px;
+      letter-spacing: 0.1px;
+    }
+
+    .meta-bar span { margin: 0 14px; }
+
+    /* ── Layout ─────────────────────────────────────────────── */
+    .container {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ── TOC ────────────────────────────────────────────────── */
+    .toc {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--brand);
+      border-radius: 8px;
+      padding: 28px 32px;
+      margin: 40px 0 0;
+    }
+
+    .toc h2 {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--brand);
+      margin-bottom: 16px;
+    }
+
+    .toc ol {
+      padding-left: 20px;
+      columns: 2;
+      column-gap: 32px;
+    }
+
+    .toc li { margin-bottom: 7px; break-inside: avoid; }
+
+    .toc a {
+      color: var(--text);
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .toc a:hover { color: var(--brand); text-decoration: underline; }
+
+    /* ── Main content ───────────────────────────────────────── */
+    main { padding: 48px 0 80px; }
+
+    section { margin-bottom: 52px; }
+
+    section:last-child { margin-bottom: 0; }
+
+    .section-number {
+      display: inline-block;
+      background: var(--brand);
+      color: var(--white);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      padding: 3px 9px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+
+    h2.section-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--brand-dark);
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--brand-light);
+      letter-spacing: -0.2px;
+    }
+
+    h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 24px 0 10px;
+    }
+
+    p { margin-bottom: 14px; color: #374151; }
+
+    p:last-child { margin-bottom: 0; }
+
+    ul, ol {
+      padding-left: 22px;
+      margin-bottom: 14px;
+    }
+
+    li { margin-bottom: 7px; color: #374151; }
+
+    /* ── Data table ─────────────────────────────────────────── */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 18px 0 14px;
+      font-size: 14.5px;
+    }
+
+    .data-table thead tr {
+      background: var(--brand);
+      color: var(--white);
+    }
+
+    .data-table th {
+      padding: 11px 16px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 13px;
+      letter-spacing: 0.2px;
+    }
+
+    .data-table th:first-child { border-radius: 6px 0 0 0; }
+    .data-table th:last-child  { border-radius: 0 6px 0 0; }
+
+    .data-table td {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    .data-table tbody tr:last-child td { border-bottom: none; }
+
+    .data-table tbody tr:nth-child(even) { background: #F9FAFB; }
+
+    /* ── Callout boxes ──────────────────────────────────────── */
+    .callout {
+      border-radius: 8px;
+      padding: 18px 22px;
+      margin: 20px 0;
+      font-size: 15px;
+    }
+
+    .callout-info {
+      background: #EFF6FF;
+      border-left: 4px solid #3B82F6;
+      color: #1E3A5F;
+    }
+
+    .callout-success {
+      background: var(--brand-light);
+      border-left: 4px solid var(--brand);
+      color: #0A4A44;
+    }
+
+    .callout-warning {
+      background: #FFFBEB;
+      border-left: 4px solid #F59E0B;
+      color: #78350F;
+    }
+
+    .callout strong { font-weight: 700; }
+
+    /* ── Contact card ───────────────────────────────────────── */
+    .contact-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 28px 32px;
+      margin-top: 20px;
+    }
+
+    .contact-card h3 { margin-top: 0; margin-bottom: 12px; }
+
+    .contact-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 10px;
+      font-size: 15px;
+    }
+
+    .contact-row:last-child { margin-bottom: 0; }
+
+    .contact-icon {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+      margin-top: 2px;
+      color: var(--brand);
+    }
+
+    .contact-label { color: var(--muted); font-size: 13px; margin-bottom: 1px; }
+
+    .contact-value { color: var(--text); font-weight: 500; }
+
+    .contact-value a { color: var(--brand); text-decoration: none; }
+    .contact-value a:hover { text-decoration: underline; }
+
+    /* ── Footer ─────────────────────────────────────────────── */
+    footer {
+      background: var(--brand-dark);
+      color: rgba(255,255,255,0.75);
+      text-align: center;
+      padding: 28px 24px;
+      font-size: 13px;
+    }
+
+    footer a { color: rgba(255,255,255,0.9); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    footer .footer-links { margin-top: 8px; }
+    footer .footer-links span { margin: 0 10px; opacity: 0.5; }
+
+    /* ── Responsive ─────────────────────────────────────────── */
+    @media (max-width: 640px) {
+      header h1 { font-size: 24px; }
+      .toc ol { columns: 1; }
+      .data-table { font-size: 13px; }
+      .data-table th, .data-table td { padding: 9px 12px; }
+      .contact-card { padding: 20px 18px; }
+      h2.section-title { font-size: 19px; }
+    }
+
+    @media print {
+      header { background: #fff; color: #000; }
+      header h1, .logo-name { color: #000; }
+      .meta-bar { background: #f3f4f6; color: #374151; }
+      footer { background: #f3f4f6; color: #374151; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════
+     HEADER
+═══════════════════════════════════════════════════════════ -->
+<header>
+  <div class="header-logo">
+    <div class="logo-mark">
+      <!-- Simple "V" monogram in brand color -->
+      <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M4 6L14 22L24 6" stroke="#0F766E" stroke-width="3.5"
+              stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div>
+      <div class="logo-name">Verve by Capillary</div>
+      <div class="logo-company">Capillary Technologies Pvt. Ltd.</div>
+    </div>
+  </div>
+  <h1>Privacy Policy</h1>
+  <p class="subtitle">
+    We are committed to protecting the privacy of every employee who uses
+    Verve. This policy explains exactly what data we collect, why, and
+    how we safeguard it.
+  </p>
+</header>
+
+<div class="meta-bar">
+  <span><strong>Effective Date:</strong> April 27, 2026</span>
+  <span>|</span>
+  <span><strong>Version:</strong> 1.0</span>
+  <span>|</span>
+  <span><strong>Applies to:</strong> Verve by Capillary mobile and web application</span>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     TABLE OF CONTENTS
+═══════════════════════════════════════════════════════════ -->
+<div class="container">
+  <nav class="toc" aria-label="Table of contents">
+    <h2>Table of Contents</h2>
+    <ol>
+      <li><a href="#overview">Overview &amp; Scope</a></li>
+      <li><a href="#who-we-are">Who We Are</a></li>
+      <li><a href="#data-collected">Data We Collect</a></li>
+      <li><a href="#how-we-use">How We Use Your Data</a></li>
+      <li><a href="#legal-basis">Legal Basis for Processing</a></li>
+      <li><a href="#data-sharing">Data Sharing &amp; Third Parties</a></li>
+      <li><a href="#storage-security">Storage &amp; Security</a></li>
+      <li><a href="#retention">Data Retention</a></li>
+      <li><a href="#your-rights">Your Rights</a></li>
+      <li><a href="#children">Children's Privacy</a></li>
+      <li><a href="#changes">Changes to This Policy</a></li>
+      <li><a href="#contact">Contact Us</a></li>
+    </ol>
+  </nav>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     MAIN CONTENT
+═══════════════════════════════════════════════════════════ -->
+<main>
+<div class="container">
+
+
+  <!-- ── 1. Overview ────────────────────────────────────────── -->
+  <section id="overview">
+    <span class="section-number">SECTION 1</span>
+    <h2 class="section-title">Overview &amp; Scope</h2>
+
+    <p>
+      This Privacy Policy ("Policy") describes how <strong>Capillary Technologies Pvt.
+      Ltd.</strong> ("Capillary," "we," "us," or "our") collects, uses, stores, and
+      protects personal information in connection with <strong>Verve by Capillary</strong>
+      ("Verve," "the App," or "the Service") — an enterprise OKR (Objectives and Key
+      Results) tracking application designed exclusively for internal use by companies
+      that are clients of Capillary Technologies.
+    </p>
+
+    <p>
+      This Policy applies to all users of Verve, including the mobile application
+      (iOS and Android) and any companion web interface, wherever they are accessed.
+      It does not apply to any other Capillary products, websites, or services unless
+      those materials directly link to this Policy.
+    </p>
+
+    <div class="callout callout-info">
+      <strong>B2B Context:</strong> Verve is provided to employer organisations
+      ("Employers") as a business-to-business (B2B) service. If you are an
+      <em>employee</em> using Verve, your Employer has engaged Capillary to process
+      your work-related data on its behalf. Please also review your Employer's own
+      internal data-use policies, which may contain additional details specific to
+      your organisation.
+    </div>
+  </section>
+
+
+  <!-- ── 2. Who We Are ──────────────────────────────────────── -->
+  <section id="who-we-are">
+    <span class="section-number">SECTION 2</span>
+    <h2 class="section-title">Who We Are</h2>
+
+    <p>
+      Capillary Technologies Pvt. Ltd. is a technology company headquartered in
+      Bangalore, India, with offices across Asia, the Middle East, and the United
+      States. We develop enterprise SaaS solutions including loyalty management,
+      customer engagement, and — through Verve — employee performance and goal
+      tracking.
+    </p>
+
+    <p>
+      For the purpose of data-protection law, Capillary acts as a
+      <strong>data processor</strong> on behalf of your Employer, who is the
+      <strong>data controller</strong> for the personal data you provide while using
+      Verve in a professional capacity. Where Capillary independently determines the
+      purposes and means of processing (for example, to operate and improve the
+      platform), Capillary acts as a data controller in its own right.
+    </p>
+  </section>
+
+
+  <!-- ── 3. Data Collected ──────────────────────────────────── -->
+  <section id="data-collected">
+    <span class="section-number">SECTION 3</span>
+    <h2 class="section-title">Data We Collect</h2>
+
+    <p>
+      We collect only the minimum data necessary to provide and support the Verve
+      service. The categories below describe every type of personal information we
+      may collect.
+    </p>
+
+    <h3>3.1 Account &amp; Identity Data</h3>
+    <p>
+      When you sign in to Verve — either through your company's Google Workspace
+      (Google SSO) or with an email address and password — we collect:
+    </p>
+    <ul>
+      <li>Full name</li>
+      <li>Work email address</li>
+      <li>Profile photo (if provided by your Google Workspace account)</li>
+      <li>Organisational role or job title (if supplied by your Employer during
+          provisioning)</li>
+      <li>Department or team assignment (if supplied by your Employer)</li>
+    </ul>
+
+    <h3>3.2 OKR &amp; Goal Data</h3>
+    <p>
+      The core purpose of Verve is to help you and your team set, track, and
+      achieve Objectives and Key Results. We store:
+    </p>
+    <ul>
+      <li>Objectives you create, edit, or are assigned to</li>
+      <li>Key Results linked to those objectives, including descriptions, metric
+          targets, and ownership</li>
+      <li>Alignment relationships between objectives (e.g., individual objectives
+          aligned to team or company objectives)</li>
+      <li>Timestamps of creation and last modification</li>
+    </ul>
+
+    <h3>3.3 Progress &amp; Check-In Data</h3>
+    <ul>
+      <li>Check-in updates you submit (progress notes, confidence ratings, numerical
+          progress values)</li>
+      <li>Date and time of each check-in</li>
+      <li>Comments or notes attached to check-ins</li>
+    </ul>
+
+    <h3>3.4 Authentication &amp; Technical Data</h3>
+    <ul>
+      <li>Authentication tokens (OAuth 2.0 tokens for Google SSO; hashed passwords
+          for email/password login — we never store passwords in plaintext)</li>
+      <li>Device type and operating system version (for technical support and
+          compatibility purposes)</li>
+      <li>App version number</li>
+      <li>Basic server logs: IP address, request timestamps, HTTP status codes
+          (retained for a limited period for security monitoring and
+          troubleshooting)</li>
+    </ul>
+
+    <h3>3.5 Data We Do <em>Not</em> Collect</h3>
+
+    <div class="callout callout-success">
+      <strong>No advertising data. No tracking. No data selling.</strong> Verve does
+      not contain advertising SDKs, third-party analytics trackers, or behavioural
+      profiling tools. We do not collect precise geolocation, financial information,
+      health data, biometric data, or any sensitive personal information beyond what
+      is listed above.
+    </div>
+
+    <table class="data-table" aria-label="Summary of data categories">
+      <thead>
+        <tr>
+          <th>Category</th>
+          <th>Examples</th>
+          <th>Collected?</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Identity &amp; profile</td>
+          <td>Name, work email, role, department</td>
+          <td>&#10003; Yes</td>
+        </tr>
+        <tr>
+          <td>OKR &amp; goal content</td>
+          <td>Objectives, key results, targets</td>
+          <td>&#10003; Yes</td>
+        </tr>
+        <tr>
+          <td>Check-in progress</td>
+          <td>Progress notes, ratings, timestamps</td>
+          <td>&#10003; Yes</td>
+        </tr>
+        <tr>
+          <td>Technical / server logs</td>
+          <td>IP address, request logs (short-term)</td>
+          <td>&#10003; Yes (limited)</td>
+        </tr>
+        <tr>
+          <td>Geolocation</td>
+          <td>GPS coordinates, location history</td>
+          <td>&#10007; No</td>
+        </tr>
+        <tr>
+          <td>Financial or payment data</td>
+          <td>Bank details, credit cards</td>
+          <td>&#10007; No</td>
+        </tr>
+        <tr>
+          <td>Health or biometric data</td>
+          <td>Health records, facial recognition</td>
+          <td>&#10007; No</td>
+        </tr>
+        <tr>
+          <td>Advertising identifiers</td>
+          <td>IDFA, GAID, ad-tracking cookies</td>
+          <td>&#10007; No</td>
+        </tr>
+        <tr>
+          <td>Third-party social data</td>
+          <td>Personal social media profiles</td>
+          <td>&#10007; No</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+
+  <!-- ── 4. How We Use Your Data ────────────────────────────── -->
+  <section id="how-we-use">
+    <span class="section-number">SECTION 4</span>
+    <h2 class="section-title">How We Use Your Data</h2>
+
+    <p>We use the data described in Section 3 strictly for the following purposes:</p>
+
+    <h3>4.1 Providing the Service</h3>
+    <ul>
+      <li>Authenticating your identity and maintaining secure sessions</li>
+      <li>Displaying your OKRs, your team's OKRs, and company-level goal hierarchies</li>
+      <li>Recording and presenting check-in updates and progress history</li>
+      <li>Sending in-app notifications or email reminders about upcoming check-ins
+          or deadline milestones (where enabled by you or your Employer)</li>
+    </ul>
+
+    <h3>4.2 Service Operation &amp; Improvement</h3>
+    <ul>
+      <li>Diagnosing technical issues and providing customer support</li>
+      <li>Monitoring system health, availability, and security</li>
+      <li>Improving product features and user experience based on aggregated,
+          de-identified usage patterns (no individual profiling)</li>
+    </ul>
+
+    <h3>4.3 Reporting to Employers</h3>
+    <p>
+      As part of our B2B service, Capillary may provide your Employer with
+      aggregated dashboards, OKR completion reports, and data exports (e.g., to
+      Google Sheets or CSV) that contain your work performance data. This is a core
+      feature of the service and is done under the authority and direction of your
+      Employer.
+    </p>
+
+    <h3>4.4 Legal &amp; Compliance Obligations</h3>
+    <ul>
+      <li>Complying with applicable laws, regulations, and lawful requests from
+          public authorities</li>
+      <li>Establishing, exercising, or defending legal claims</li>
+    </ul>
+
+    <div class="callout callout-warning">
+      <strong>No automated decision-making:</strong> Verve does not make automated
+      decisions that produce legal or similarly significant effects about you without
+      human oversight. OKR scores and completion percentages are purely informational
+      tools for you and your manager.
+    </div>
+  </section>
+
+
+  <!-- ── 5. Legal Basis ─────────────────────────────────────── -->
+  <section id="legal-basis">
+    <span class="section-number">SECTION 5</span>
+    <h2 class="section-title">Legal Basis for Processing</h2>
+
+    <p>
+      Where applicable data-protection law (including the EU/UK GDPR or India's
+      Digital Personal Data Protection Act, 2023) requires us to identify a legal
+      basis for processing your personal data, we rely on the following:
+    </p>
+
+    <table class="data-table" aria-label="Legal bases for data processing">
+      <thead>
+        <tr>
+          <th>Processing Activity</th>
+          <th>Legal Basis</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Authenticating and managing your account</td>
+          <td>Contract performance / Legitimate interests</td>
+        </tr>
+        <tr>
+          <td>Storing and displaying OKR &amp; check-in data</td>
+          <td>Contract performance (as directed by your Employer)</td>
+        </tr>
+        <tr>
+          <td>Providing OKR reports to your Employer</td>
+          <td>Legitimate interests of the Employer; contractual obligation</td>
+        </tr>
+        <tr>
+          <td>Security monitoring and server logs</td>
+          <td>Legitimate interests (security and fraud prevention)</td>
+        </tr>
+        <tr>
+          <td>Improving the Service (aggregated analytics)</td>
+          <td>Legitimate interests (product development)</td>
+        </tr>
+        <tr>
+          <td>Complying with legal obligations</td>
+          <td>Legal obligation</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>
+      Because Verve is an enterprise workplace tool, most processing occurs under
+      the employment or contractual relationship between you and your Employer, and
+      under the service agreement between your Employer and Capillary. If you have
+      questions about how your Employer processes your data within Verve, please
+      contact your Employer's HR or data protection team directly.
+    </p>
+  </section>
+
+
+  <!-- ── 6. Data Sharing ────────────────────────────────────── -->
+  <section id="data-sharing">
+    <span class="section-number">SECTION 6</span>
+    <h2 class="section-title">Data Sharing &amp; Third Parties</h2>
+
+    <div class="callout callout-success">
+      <strong>We do not sell your personal data.</strong> We do not rent, sell, or
+      trade your personal information to any third party for marketing, advertising,
+      or any commercial purpose unrelated to providing the Verve service.
+    </div>
+
+    <h3>6.1 Your Employer</h3>
+    <p>
+      Your Employer, as the data controller, has access to the OKR and check-in data
+      you create within their Verve workspace. This is the intended and primary
+      purpose of the application. Administrators and managers within your organisation
+      may view your goals and progress as configured by your Employer.
+    </p>
+
+    <h3>6.2 Infrastructure &amp; Cloud Service Providers</h3>
+    <p>
+      Verve's backend is hosted on <strong>Google Cloud Platform</strong> (Cloud Run,
+      Cloud SQL, and related Google Cloud services). Google acts as a sub-processor
+      under Capillary's direction and is contractually prohibited from using your
+      data for its own purposes. Google Cloud's data processing commitments are
+      covered under Google's Data Processing Addendum.
+    </p>
+
+    <h3>6.3 Authentication Provider</h3>
+    <p>
+      If you sign in using Google SSO, you authenticate directly with Google via the
+      OAuth 2.0 protocol. We receive only the identity token (name, email, profile
+      photo) that your Google Workspace administrator has authorised. We do not
+      receive access to your Google Drive, Gmail, Calendar, or any other Google
+      services beyond this limited identity scope.
+    </p>
+
+    <h3>6.4 No Third-Party Advertising or Analytics</h3>
+    <p>
+      Verve contains <strong>no third-party advertising SDKs</strong>, no behavioural
+      tracking pixels, and no social-media integration. We do not share personal data
+      with data brokers, advertising networks, or any analytics service that would
+      profile you as an individual.
+    </p>
+
+    <h3>6.5 Legal Disclosures</h3>
+    <p>
+      We may disclose personal data when required by law, court order, or legitimate
+      governmental authority, or where necessary to protect the rights, property, or
+      safety of Capillary, our clients, or others. Where legally permissible, we will
+      notify the relevant Employer before making such a disclosure.
+    </p>
+
+    <h3>6.6 Corporate Transactions</h3>
+    <p>
+      In the event of a merger, acquisition, asset sale, or restructuring involving
+      Capillary Technologies, your data may be transferred as part of that
+      transaction. We will notify affected Employers in advance, and any successor
+      entity will be bound by terms no less protective than this Policy.
+    </p>
+  </section>
+
+
+  <!-- ── 7. Storage &amp; Security ──────────────────────────── -->
+  <section id="storage-security">
+    <span class="section-number">SECTION 7</span>
+    <h2 class="section-title">Storage &amp; Security</h2>
+
+    <h3>7.1 Infrastructure</h3>
+    <p>
+      All Verve data is stored and processed on <strong>Google Cloud Platform</strong>
+      infrastructure located in data centres that meet ISO 27001, SOC 2, and PCI DSS
+      standards. Google Cloud data centres operate in geographically redundant
+      configurations to ensure availability and resilience.
+    </p>
+
+    <h3>7.2 Encryption</h3>
+    <ul>
+      <li>
+        <strong>In transit:</strong> All communications between the Verve app
+        (mobile and web) and our servers are encrypted using TLS 1.2 or higher.
+        We enforce HTTPS for all endpoints; unencrypted HTTP connections are
+        rejected.
+      </li>
+      <li>
+        <strong>At rest:</strong> All data stored in our databases and cloud storage
+        buckets is encrypted at rest using AES-256 encryption, managed by
+        Google Cloud Key Management Service (Cloud KMS).
+      </li>
+      <li>
+        <strong>Passwords:</strong> If you use email/password authentication,
+        your password is hashed using a strong, salted one-way hashing algorithm
+        (bcrypt). We never store or transmit passwords in plaintext.
+      </li>
+    </ul>
+
+    <h3>7.3 Access Controls</h3>
+    <ul>
+      <li>Access to production systems is restricted to authorised Capillary
+          engineering personnel on a need-to-know basis.</li>
+      <li>All administrative access requires multi-factor authentication (MFA).</li>
+      <li>Role-based access controls (RBAC) within the application ensure that
+          employees can only see the data scoped to their team or organisation
+          as configured by their Employer's administrator.</li>
+      <li>All internal access to personal data is logged and auditable.</li>
+    </ul>
+
+    <h3>7.4 Security Monitoring</h3>
+    <p>
+      We maintain continuous security monitoring, automated vulnerability scanning,
+      and regular security reviews. In the event of a personal data breach that
+      poses a risk to individuals, we will notify affected Employers without undue
+      delay and in accordance with applicable law.
+    </p>
+
+    <div class="callout callout-warning">
+      <strong>Responsible disclosure:</strong> If you discover a security
+      vulnerability in Verve, please report it responsibly to
+      <a href="mailto:privacy@capillarytech.com">privacy@capillarytech.com</a>.
+      We appreciate and take all security reports seriously.
+    </div>
+  </section>
+
+
+  <!-- ── 8. Data Retention ──────────────────────────────────── -->
+  <section id="retention">
+    <span class="section-number">SECTION 8</span>
+    <h2 class="section-title">Data Retention</h2>
+
+    <p>
+      We retain personal data for as long as necessary to provide the Verve service
+      and fulfil the purposes outlined in this Policy, unless a longer retention
+      period is required by law.
+    </p>
+
+    <table class="data-table" aria-label="Data retention schedule">
+      <thead>
+        <tr>
+          <th>Data Category</th>
+          <th>Retention Period</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Account &amp; profile data</td>
+          <td>For the duration of the Employer's active subscription, plus up to
+              90 days after account closure to allow for data export requests</td>
+        </tr>
+        <tr>
+          <td>OKR &amp; check-in data</td>
+          <td>For the duration of the Employer's active subscription, plus up to
+              90 days after account closure</td>
+        </tr>
+        <tr>
+          <td>Server &amp; access logs</td>
+          <td>Up to 90 days for routine logs; up to 12 months for security
+              incident logs</td>
+        </tr>
+        <tr>
+          <td>Backup copies</td>
+          <td>Up to 30 days for automated backups; deleted in accordance with
+              the above schedule thereafter</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>
+      When an Employer's subscription ends or is terminated, we will delete or
+      anonymise all associated personal data in accordance with the terms of the
+      service agreement, subject to any legal holds or obligations to retain certain
+      records.
+    </p>
+
+    <p>
+      Individual employees may request deletion of their personal data by following
+      the process described in Section 9.
+    </p>
+  </section>
+
+
+  <!-- ── 9. Your Rights ─────────────────────────────────────── -->
+  <section id="your-rights">
+    <span class="section-number">SECTION 9</span>
+    <h2 class="section-title">Your Rights</h2>
+
+    <p>
+      Depending on where you are located and applicable law, you may have the
+      following rights in relation to your personal data:
+    </p>
+
+    <table class="data-table" aria-label="Individual rights">
+      <thead>
+        <tr>
+          <th>Right</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Access</strong></td>
+          <td>Request a copy of the personal data we hold about you.</td>
+        </tr>
+        <tr>
+          <td><strong>Rectification</strong></td>
+          <td>Ask us to correct inaccurate or incomplete data. Note that most
+              profile data is managed by your Employer's administrator.</td>
+        </tr>
+        <tr>
+          <td><strong>Erasure / Deletion</strong></td>
+          <td>Request that we delete your personal data, subject to legal
+              retention requirements and your Employer's policies.</td>
+        </tr>
+        <tr>
+          <td><strong>Data Portability</strong></td>
+          <td>Request your OKR and check-in data in a structured, machine-readable
+              format (e.g., CSV or JSON).</td>
+        </tr>
+        <tr>
+          <td><strong>Restriction</strong></td>
+          <td>Ask us to restrict processing of your data in certain
+              circumstances.</td>
+        </tr>
+        <tr>
+          <td><strong>Objection</strong></td>
+          <td>Object to processing based on legitimate interests where your
+              particular situation warrants it.</td>
+        </tr>
+        <tr>
+          <td><strong>Withdraw Consent</strong></td>
+          <td>Where processing is based on consent, withdraw it at any time
+              without affecting prior processing.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>How to Exercise Your Rights</h3>
+    <p>
+      Because Verve is an enterprise application, some rights (particularly
+      access, rectification, and erasure) are primarily exercisable through
+      your <strong>Employer</strong>, who controls your account and
+      organisational data. We recommend first contacting your HR department
+      or IT administrator.
+    </p>
+    <p>
+      For requests that must be directed to Capillary (for example, where your
+      Employer is no longer accessible or has ceased operations), please contact
+      us at:
+    </p>
+    <ul>
+      <li>Email: <a href="mailto:privacy@capillarytech.com">privacy@capillarytech.com</a></li>
+      <li>Subject line: <em>"Data Subject Request – Verve"</em></li>
+      <li>Include: your full name, work email address, Employer name, and a
+          clear description of your request</li>
+    </ul>
+    <p>
+      We will respond to verified requests within <strong>30 days</strong>. In
+      complex cases, we may extend this period by up to an additional 60 days
+      and will inform you accordingly.
+    </p>
+
+    <h3>Right to Lodge a Complaint</h3>
+    <p>
+      If you believe your data-protection rights have been violated, you have the
+      right to lodge a complaint with the relevant supervisory authority in your
+      jurisdiction. For individuals in the European Economic Area or United Kingdom,
+      this is your national data protection authority. For individuals in India, this
+      is the Data Protection Board of India (once constituted under the DPDP Act,
+      2023).
+    </p>
+  </section>
+
+
+  <!-- ── 10. Children ───────────────────────────────────────── -->
+  <section id="children">
+    <span class="section-number">SECTION 10</span>
+    <h2 class="section-title">Children's Privacy</h2>
+
+    <p>
+      Verve is an enterprise workplace application intended solely for use by
+      employees of organisations that have contracted with Capillary Technologies.
+      The Service is not directed at, and we do not knowingly collect personal data
+      from, individuals under the age of 18 (or the applicable age of majority in
+      their jurisdiction).
+    </p>
+    <p>
+      If we become aware that a minor's personal data has been collected without
+      appropriate authorisation, we will take prompt steps to delete that
+      information.
+    </p>
+  </section>
+
+
+  <!-- ── 11. Changes ────────────────────────────────────────── -->
+  <section id="changes">
+    <span class="section-number">SECTION 11</span>
+    <h2 class="section-title">Changes to This Policy</h2>
+
+    <p>
+      We may update this Privacy Policy from time to time to reflect changes in our
+      practices, the Verve Service, or applicable law. When we make material changes,
+      we will:
+    </p>
+    <ul>
+      <li>Update the "Effective Date" at the top of this page;</li>
+      <li>Notify your Employer's account administrator via email at least
+          <strong>14 days</strong> before the changes take effect (for material
+          changes); and</li>
+      <li>Display a prominent notice within the Verve application.</li>
+    </ul>
+    <p>
+      We encourage you to review this Policy periodically. Continued use of the
+      Service after the effective date of any changes constitutes acceptance of the
+      revised Policy. If you disagree with any material changes, please discontinue
+      use of the Service and contact your Employer or us directly.
+    </p>
+  </section>
+
+
+  <!-- ── 12. Contact ────────────────────────────────────────── -->
+  <section id="contact">
+    <span class="section-number">SECTION 12</span>
+    <h2 class="section-title">Contact Us</h2>
+
+    <p>
+      If you have any questions, concerns, or requests relating to this Privacy
+      Policy or the way we handle your personal data, please reach out to us using
+      the details below. We are committed to addressing all enquiries promptly and
+      transparently.
+    </p>
+
+    <div class="contact-card">
+      <h3>Data Privacy &amp; Compliance</h3>
+
+      <div class="contact-row">
+        <svg class="contact-icon" xmlns="http://www.w3.org/2000/svg"
+             fill="none" viewBox="0 0 24 24" stroke="currentColor"
+             stroke-width="1.75" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round"
+                d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25H4.5a2.25 2.25 0
+                   01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25
+                   2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0
+                   01-1.07 1.916l-7.5 4.615a2.25 2.25 0
+                   01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/>
+        </svg>
+        <div>
+          <div class="contact-label">Privacy Enquiries</div>
+          <div class="contact-value">
+            <a href="mailto:privacy@capillarytech.com">privacy@capillarytech.com</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="contact-row">
+        <svg class="contact-icon" xmlns="http://www.w3.org/2000/svg"
+             fill="none" viewBox="0 0 24 24" stroke="currentColor"
+             stroke-width="1.75" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round"
+                d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5
+                   3.75h1.5m-1.5 3.75h1.5m3-7.5H15m-1.5 3.75H15m-1.5
+                   3.75H15M9 21v-3.375c0-.621.504-1.125
+                   1.125-1.125h3.75c.621 0 1.125.504 1.125
+                   1.125V21"/>
+        </svg>
+        <div>
+          <div class="contact-label">Registered Name</div>
+          <div class="contact-value">Capillary Technologies Pvt. Ltd.</div>
+        </div>
+      </div>
+
+      <div class="contact-row">
+        <svg class="contact-icon" xmlns="http://www.w3.org/2000/svg"
+             fill="none" viewBox="0 0 24 24" stroke="currentColor"
+             stroke-width="1.75" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round"
+                d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004
+                   0 01-8.716-6.747M12 21c2.485 0 4.5-4.03
+                   4.5-9S14.485 3 12 3m0 18c-2.485
+                   0-4.5-4.03-4.5-9S9.515 3 12 3m0
+                   0a8.997 8.997 0 017.843 4.582M12
+                   3a8.997 8.997 0 00-7.843 4.582m15.686
+                   0A11.953 11.953 0 0112 10.5c-2.998
+                   0-5.74-1.1-7.843-2.918m15.686 0A8.959
+                   8.959 0 0121 12c0 .778-.099 1.533-.284
+                   2.253m0 0A17.919 17.919 0 0112 16.5c-3.162
+                   0-6.133-.815-8.716-2.247m0
+                   0A9.015 9.015 0 013 12c0-1.605.42-3.113
+                   1.157-4.418"/>
+        </svg>
+        <div>
+          <div class="contact-label">Website</div>
+          <div class="contact-value">
+            <a href="https://www.capillarytech.com"
+               target="_blank" rel="noopener noreferrer">
+              www.capillarytech.com
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="contact-row">
+        <svg class="contact-icon" xmlns="http://www.w3.org/2000/svg"
+             fill="none" viewBox="0 0 24 24" stroke="currentColor"
+             stroke-width="1.75" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round"
+                d="M15 10.5a3 3 0 11-6 0 3 3 0
+                   016 0z"/>
+          <path stroke-linecap="round" stroke-linejoin="round"
+                d="M19.5 10.5c0 7.142-7.5
+                   11.25-7.5 11.25S4.5 17.642 4.5
+                   10.5a7.5 7.5 0 1115 0z"/>
+        </svg>
+        <div>
+          <div class="contact-label">Headquarters</div>
+          <div class="contact-value">Bangalore, Karnataka, India</div>
+        </div>
+      </div>
+    </div>
+
+    <p style="margin-top: 24px; font-size: 14px; color: #6B7280;">
+      When contacting us about a data subject request, please include
+      <em>"Data Subject Request – Verve"</em> in the subject line to help us
+      route your enquiry to the correct team. We aim to acknowledge all
+      privacy-related enquiries within <strong>5 business days</strong> and
+      to resolve them within <strong>30 days</strong>.
+    </p>
+  </section>
+
+
+</div><!-- /container -->
+</main>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     FOOTER
+═══════════════════════════════════════════════════════════ -->
+<footer>
+  <div>
+    &copy; 2026 Capillary Technologies Pvt. Ltd. All rights reserved.
+  </div>
+  <div class="footer-links">
+    <a href="mailto:privacy@capillarytech.com">privacy@capillarytech.com</a>
+    <span>|</span>
+    <a href="https://www.capillarytech.com" target="_blank"
+       rel="noopener noreferrer">capillarytech.com</a>
+    <span>|</span>
+    <span>Verve by Capillary &mdash; Privacy Policy v1.0</span>
+    <span>|</span>
+    <span>Effective: April 27, 2026</span>
+  </div>
+</footer>
+
+</body>
+</html>
