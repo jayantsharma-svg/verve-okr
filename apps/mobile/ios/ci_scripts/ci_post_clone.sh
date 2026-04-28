@@ -18,8 +18,12 @@ cd "$CI_PRIMARY_REPOSITORY_PATH"
 # Install npm dependencies
 npm install --legacy-peer-deps
 
-# Install pods
-cd apps/mobile/ios
+# Regenerate native iOS project fresh so module paths match this CI environment
+cd apps/mobile
+npx expo prebuild --platform ios --clean --no-install
+
+# Install pods with the freshly generated project
+cd ios
 pod install
 
 echo "=== post-clone complete ==="
