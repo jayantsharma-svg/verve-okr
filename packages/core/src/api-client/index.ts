@@ -24,6 +24,7 @@ interface ClientConfig {
   baseUrl: string
   getToken: () => string | null
   onUnauthorized?: () => void
+  setToken?: (token: string) => void
 }
 
 // ─── Base fetch wrapper ───────────────────────────────────────────────────────
@@ -43,6 +44,36 @@ async function apiFetch<T>(
   const res = await fetch(`${config.baseUrl}${path}`, { ...options, headers })
 
   if (res.status === 401) {
+    // Attempt token refresh via httpOnly cookie
+    try {
+      const refreshRes = await fetch(`${config.baseUrl}/auth/refresh`, {
+        method: 'POST',
+        credentials: 'include',
+      })
+      if (refreshRes.ok) {
+        const refreshData = await refreshRes.json() as { data: { accessToken: string } }
+        const newToken = refreshData.data.accessToken
+        config.setToken?.(newToken)
+        headers['Authorization'] = `Bearer ${newToken}`
+        const retryRes = await fetch(`${config.baseUrl}${path}`, { ...options, headers })
+        if (!retryRes.ok) {
+          if (retryRes.status === 401) {
+            config.onUnauthorized?.()
+            throw new Error('Unauthorized')
+          }
+          const body = await retryRes.json().catch(() => ({ error: { message: 'Request failed', code: 'UNKNOWN', details: undefined } })) as { error: { message?: string; code?: string; details?: Record<string, string[]> } }
+          throw Object.assign(new Error(body.error?.message ?? 'Request failed'), {
+            status: retryRes.status,
+            code: body.error?.code,
+            details: body.error?.details,
+          })
+        }
+        return retryRes.json() as Promise<T>
+      }
+    } catch (e) {
+      // If the thrown error is already a structured error, rethrow it
+      if (e instanceof Error && (e as any).status) throw e
+    }
     config.onUnauthorized?.()
     throw new Error('Unauthorized')
   }
@@ -87,16 +118,8 @@ export function createApiClient(config: ClientConfig) {
         post<AuthSession>('/auth/google', { code }),
       loginWithGoogleToken: (idToken: string) =>
         post<AuthSession>('/auth/google/token', { idToken }),
-      loginWithPassword: (email: string, password: string) =>
-        post<AuthSession>('/auth/login', { email, password }),
-      register: (data: { email: string; password: string; name: string }) =>
-        post<AuthSession>('/auth/register', data),
       refresh: () => post<AuthSession>('/auth/refresh'),
       me: () => get<User>('/auth/me'),
-      forgotPassword: (email: string) =>
-        post<void>('/auth/forgot-password', { email }),
-      resetPassword: (token: string, newPassword: string) =>
-        post<void>('/auth/reset-password', { token, newPassword }),
     },
 
     // Cycles

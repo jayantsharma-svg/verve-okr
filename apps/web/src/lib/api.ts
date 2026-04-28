@@ -10,6 +10,9 @@ export const api = createApiClient({
     if (typeof window === 'undefined') return null
     return localStorage.getItem('okr_access_token')
   },
+  setToken: (token: string) => {
+    if (typeof window !== 'undefined') localStorage.setItem('okr_access_token', token)
+  },
   onUnauthorized: () => {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('okr_access_token')
