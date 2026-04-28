@@ -494,14 +494,14 @@ function ManageTab() {
                   {ri.status === 'submitted' && (
                     <div className="flex items-center gap-2 shrink-0">
                       <button
-                        onClick={() => decideMut.mutate({ id: ri.id, action: 'approve' })}
+                        onClick={() => decideMut.mutate({ id: ri.id, action: 'approved' })}
                         disabled={decideMut.isPending && decideMut.variables?.id === ri.id}
                         className="text-xs font-medium px-3 py-1.5 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 disabled:opacity-60 transition-colors"
                       >
                         Approve
                       </button>
                       <button
-                        onClick={() => decideMut.mutate({ id: ri.id, action: 'request_revision' })}
+                        onClick={() => decideMut.mutate({ id: ri.id, action: 'revision_requested' })}
                         disabled={decideMut.isPending && decideMut.variables?.id === ri.id}
                         className="text-xs font-medium px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg hover:bg-amber-100 disabled:opacity-60 transition-colors"
                       >

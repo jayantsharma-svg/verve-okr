@@ -131,7 +131,7 @@ router.get('/:id', async (req: Request, res: Response, next) => {
           `SELECT c.*, u.name AS author_name FROM checkins c
            JOIN users u ON u.id = c.author_id
            WHERE c.key_result_id = ANY($1::uuid[])
-           ORDER BY c.created_at DESC`,
+           ORDER BY c.created_at DESC LIMIT 20`,
           [krIds],
         )
       : []
@@ -426,6 +426,32 @@ router.post('/:objectiveId/key-results/:krId/checkins', validate(CreateCheckinSc
     }
 
     res.status(201).json({ data: { message: 'Check-in recorded', newValue, confidence } })
+  } catch (err) {
+    next(err)
+  }
+})
+
+// ─── Objective-level progress notes (for objectives without KRs) ──────────────
+
+router.post('/:id/notes', async (req: Request, res: Response, next) => {
+  try {
+    const user = req.user!
+    const { note, confidence } = req.body as { note?: string; confidence?: string }
+
+    const objective = await queryOne<{ id: string }>(
+      'SELECT id FROM objectives WHERE id = $1 AND status != $2',
+      [req.params['id'], 'deleted'],
+    )
+    if (!objective) throw new AppError('NOT_FOUND', 'Objective not found', 404)
+
+    await writeAudit({
+      actorId: user.sub, action: 'note', entityType: 'objective',
+      entityId: req.params['id']!,
+      newJson: { note: note ?? null, confidence: confidence ?? null } as any,
+      client: detectClient(req),
+    })
+
+    res.status(201).json({ data: { message: 'Note saved' } })
   } catch (err) {
     next(err)
   }

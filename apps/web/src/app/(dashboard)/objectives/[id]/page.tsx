@@ -159,9 +159,7 @@ export default function ObjectiveDetailPage({ params }: { params: { id: string }
                 <KeyResultCard key={kr.id} kr={kr} onCheckin={() => setCheckinKr(kr)} />
               ))}
               {krs.length === 0 && (
-                <div className="text-sm text-gray-400 bg-white rounded-xl border border-dashed border-gray-200 p-8 text-center">
-                  No key results yet.
-                </div>
+                <ObjectiveCheckinPanel objectiveId={params.id} onSuccess={() => qc.invalidateQueries({ queryKey: ['objective', params.id] })} />
               )}
             </div>
           </section>
@@ -636,6 +634,64 @@ function CheckinModal({ kr, onClose, onSuccess }: { kr: KeyResult; onClose: () =
           </button>
         </div>
       </div>
+    </div>
+  )
+}
+
+// ─── Objective-level check-in (when no KRs exist) ────────────────────────────
+
+function ObjectiveCheckinPanel({ objectiveId, onSuccess }: { objectiveId: string; onSuccess: () => void }) {
+  const [note, setNote] = useState('')
+  const [confidence, setConfidence] = useState<'on_track' | 'at_risk' | 'off_track'>('on_track')
+  const [saved, setSaved] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const mutation = useMutation({
+    mutationFn: () =>
+      fetch(`${process.env['NEXT_PUBLIC_API_URL'] ?? 'http://localhost:3001'}/objectives/${objectiveId}/notes`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('okr_access_token')}`,
+        },
+        body: JSON.stringify({ note, confidence }),
+      }).then(async (r) => {
+        if (!r.ok) throw new Error((await r.json()).error?.message ?? 'Failed to save')
+      }),
+    onSuccess: () => { setSaved(true); setNote(''); onSuccess() },
+    onError: (e: any) => setError(e.message),
+  })
+
+  return (
+    <div className="bg-white rounded-xl border border-dashed border-gray-200 p-6">
+      <p className="text-sm font-semibold text-gray-700 mb-4">Progress update</p>
+      {saved && <p className="text-xs text-green-600 mb-3 font-medium">✓ Update saved</p>}
+      {error && <p className="text-xs text-red-500 mb-3">{error}</p>}
+      <div className="flex gap-2 mb-3">
+        {(['on_track', 'at_risk', 'off_track'] as const).map((c) => (
+          <button
+            key={c}
+            onClick={() => setConfidence(c)}
+            className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors ${confidence === c ? confidenceColor(c) + ' border-transparent' : 'border-gray-200 text-gray-500 hover:border-gray-300'}`}
+          >
+            {confidenceLabel(c)}
+          </button>
+        ))}
+      </div>
+      <textarea
+        value={note}
+        onChange={(e) => setNote(e.target.value)}
+        placeholder="Add a progress note (optional)…"
+        rows={2}
+        className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
+      />
+      <button
+        onClick={() => mutation.mutate()}
+        disabled={mutation.isPending}
+        className="mt-2 text-xs font-semibold px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+      >
+        {mutation.isPending ? 'Saving…' : 'Save update'}
+      </button>
     </div>
   )
 }

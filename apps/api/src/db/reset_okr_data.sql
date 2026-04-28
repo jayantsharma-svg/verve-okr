@@ -16,7 +16,7 @@ TRUNCATE TABLE
   appraisal_cycles,
   review_items,
   review_cycles,
-  okr_cycles,
+  cycles,
   audit_log
 RESTART IDENTITY CASCADE;
 

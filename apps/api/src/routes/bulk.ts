@@ -11,11 +11,10 @@ import { AppError } from '../middleware/error.js'
 import type { BulkRowResult } from '@okr-tool/core'
 
 const router = Router()
-router.use(requireAuth)
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } })
 
-// ─── Template download ────────────────────────────────────────────────────────
+// ─── Template download (no auth — direct browser download via <a href>) ───────
 
 router.get('/templates/download', (req, res) => {
   const type = (req.query['type'] as string) ?? 'create'
@@ -55,6 +54,9 @@ router.get('/templates/download', (req, res) => {
 })
 
 // ─── Upload & validate ────────────────────────────────────────────────────────
+
+// All remaining routes require auth
+router.use(requireAuth)
 
 router.post('/upload', upload.single('file'), async (req, res, next) => {
   try {
