@@ -15,6 +15,7 @@ import reviewsRouter from './routes/reviews.js'
 import emailIntelligenceRouter from './routes/emailIntelligence.js'
 import meetingDigestRouter from './routes/meetingDigest.js'
 import adminSheetsRouter from './routes/adminSheets.js'
+import { keyResultsRouter } from './routes/keyResults.js'
 import { errorHandler, notFound } from './middleware/error.js'
 import { requireAuth } from './middleware/auth.js'
 import { handleJob } from './workers/jobHandler.js'
@@ -52,6 +53,7 @@ app.get('/health', (_req, res) => res.json({ status: 'ok', ts: new Date().toISOS
 // ─── Routes ───────────────────────────────────────────────────────────────────
 app.use('/auth',                authRouter)
 app.use('/objectives',         objectivesRouter)
+app.use('/key-results',        keyResultsRouter)
 app.use('/cycles',             cyclesRouter)
 app.use('/bulk',               bulkRouter)
 app.use('/',                   appraisalsRouter)

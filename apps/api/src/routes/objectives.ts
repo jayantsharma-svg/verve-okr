@@ -192,8 +192,10 @@ router.post('/', validate(CreateObjectiveSchema), async (req: Request, res: Resp
     const body = req.body
     const user = req.user!
 
-    // Determine approval status: individual = active immediately, team+ = pending_approval
+    // Admins and dept_leads can create any level OKR without approval
+    // Other roles: individual = active immediately, team+ = pending_approval
     const requiresApproval = body.level !== 'individual'
+      && !['admin', 'dept_lead'].includes(user.role)
     const status = requiresApproval ? 'pending_approval' : 'active'
 
     const objective = await queryOne(
