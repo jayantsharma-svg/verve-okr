@@ -8,8 +8,8 @@ import { Router, Request, Response } from 'express'
 import { requireAuth } from '../middleware/auth.js'
 import { validate } from '../middleware/validate.js'
 import { queryOne, queryMany, withTransaction } from '../db/client.js'
-import { AppError } from '../middleware/errorHandler.js'
-import { writeAudit, detectClient } from '../services/audit.js'
+import { AppError } from '../middleware/error.js'
+import { writeAudit, detectClient } from '../middleware/audit.js'
 import { sendNotification } from '../services/notifications.js'
 import { z } from 'zod'
 
@@ -80,8 +80,9 @@ router.post('/:id/checkins', validate(CreateCheckinSchema), async (req: Request,
     })
 
     if (['at_risk', 'off_track'].includes(confidence) && kr.confidence === 'on_track') {
-      sendNotification(kr.owner_id, 'at_risk_alert', {
-        krTitle: kr.title, confidence, newValue,
+      sendNotification({
+        userId: kr.owner_id, type: 'at_risk_alert',
+        data: { krTitle: kr.title, confidence, newValue },
       }).catch(() => {})
     }
 
