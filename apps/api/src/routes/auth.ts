@@ -1,22 +1,12 @@
 import { Router } from 'express'
-import bcrypt from 'bcrypt'
-import crypto from 'node:crypto'
 import { OAuth2Client } from 'google-auth-library'
-import {
-  EmailPasswordLoginSchema,
-  RegisterSchema,
-  ForgotPasswordSchema,
-  ResetPasswordSchema,
-} from '@okr-tool/core'
-import { queryOne, query } from '../db/client.js'
-import { sendPasswordResetEmail } from '../services/notifications.js'
+import { queryOne } from '../db/client.js'
 import {
   signAccessToken,
   signRefreshToken,
   verifyRefreshToken,
   requireAuth,
 } from '../middleware/auth.js'
-import { validate } from '../middleware/validate.js'
 import { AppError } from '../middleware/error.js'
 import { writeAudit } from '../middleware/audit.js'
 import type { Request, Response } from 'express'
@@ -182,98 +172,6 @@ router.get('/google/callback', async (req: Request, res: Response, next) => {
   }
 })
 
-// ─── Email + Password ─────────────────────────────────────────────────────────
-
-router.post('/register', validate(RegisterSchema), async (req: Request, res: Response, next) => {
-  try {
-    const { email, password, name } = req.body as { email: string; password: string; name: string }
-
-    // Enforce company domain
-    const domain = email.split('@')[1]
-    if (domain !== WORKSPACE_DOMAIN) {
-      throw new AppError('FORBIDDEN', 'Registration requires a company email address', 403)
-    }
-
-    const existing = await queryOne('SELECT id FROM users WHERE email = $1', [email])
-    if (existing) throw new AppError('CONFLICT', 'Email already registered', 409)
-
-    const passwordHash = await bcrypt.hash(password, 12)
-    const user = await queryOne<{ id: string; role: string }>(
-      `INSERT INTO users (email, name, password_hash, auth_type)
-       VALUES ($1, $2, $3, 'email_password')
-       RETURNING id, role`,
-      [email, name, passwordHash],
-    )
-    if (!user) throw new AppError('INTERNAL_ERROR', 'User creation failed', 500)
-
-    // Provision default notification prefs
-    await query(
-      `INSERT INTO notification_prefs (user_id) VALUES ($1) ON CONFLICT DO NOTHING`,
-      [user.id],
-    )
-
-    const accessToken = signAccessToken({
-      sub: user.id,
-      email,
-      role: user.role as any,
-      authType: 'email_password',
-    })
-    const refreshToken = signRefreshToken(user.id)
-
-    res
-      .cookie('refresh_token', refreshToken, {
-        httpOnly: true,
-        secure: process.env['NODE_ENV'] === 'production',
-        sameSite: 'lax',
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-        path: '/auth/refresh',
-      })
-      .status(201)
-      .json({ data: { accessToken, user: { id: user.id, email, name, role: user.role } } })
-  } catch (err) {
-    next(err)
-  }
-})
-
-router.post('/login', validate(EmailPasswordLoginSchema), async (req: Request, res: Response, next) => {
-  try {
-    const { email, password } = req.body as { email: string; password: string }
-
-    const user = await queryOne<{ id: string; role: string; name: string; password_hash: string | null; auth_type: string }>(
-      `SELECT id, role, name, password_hash, auth_type FROM users WHERE email = $1 AND is_active = TRUE`,
-      [email],
-    )
-    if (!user || user.auth_type !== 'email_password' || !user.password_hash) {
-      throw new AppError('UNAUTHORIZED', 'Invalid credentials', 401)
-    }
-
-    const valid = await bcrypt.compare(password, user.password_hash)
-    if (!valid) throw new AppError('UNAUTHORIZED', 'Invalid credentials', 401)
-
-    const accessToken = signAccessToken({
-      sub: user.id,
-      email,
-      role: user.role as any,
-      authType: 'email_password',
-    })
-    const refreshToken = signRefreshToken(user.id)
-
-    await writeAudit({ actorId: user.id, action: 'login', entityType: 'user', entityId: user.id })
-
-    res
-      .cookie('refresh_token', refreshToken, {
-        httpOnly: true,
-        secure: process.env['NODE_ENV'] === 'production',
-        sameSite: 'lax',
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-        path: '/auth/refresh',
-      })
-      .json({ data: { accessToken, user: { id: user.id, email, name: user.name, role: user.role } } })
-  } catch (err) {
-    next(err)
-  }
-})
-
 // ─── Token refresh ────────────────────────────────────────────────────────────
 
 router.post('/refresh', async (req: Request, res: Response, next) => {
@@ -316,63 +214,11 @@ router.get('/me', requireAuth, async (req: Request, res: Response, next) => {
   }
 })
 
-// ─── Forgot / Reset password ──────────────────────────────────────────────────
-
-router.post('/forgot-password', validate(ForgotPasswordSchema), async (req: Request, res: Response, next) => {
-  try {
-    const { email } = req.body as { email: string }
-    const user = await queryOne<{ id: string; name: string }>(
-      `SELECT id, name FROM users WHERE email = $1 AND auth_type = 'email_password' AND is_active = TRUE`,
-      [email],
-    )
-    // Always return 200 to prevent email enumeration
-    if (user) {
-      const token = crypto.randomBytes(32).toString('hex')
-      const tokenHash = crypto.createHash('sha256').update(token).digest('hex')
-      await query(
-        `INSERT INTO password_reset_tokens (user_id, token_hash, expires_at)
-         VALUES ($1, $2, NOW() + INTERVAL '1 hour')`,
-        [user.id, tokenHash],
-      )
-      await sendPasswordResetEmail(email, user.name, token)
-    }
-    res.json({ data: { message: 'If that email exists, a reset link has been sent.' } })
-  } catch (err) {
-    next(err)
-  }
-})
-
-router.post('/reset-password', validate(ResetPasswordSchema), async (req: Request, res: Response, next) => {
-  try {
-    const { token, newPassword } = req.body as { token: string; newPassword: string }
-    const tokenHash = crypto.createHash('sha256').update(token).digest('hex')
-
-    const record = await queryOne<{ id: string; user_id: string; used_at: string | null }>(
-      `SELECT id, user_id, used_at FROM password_reset_tokens
-       WHERE token_hash = $1 AND expires_at > NOW()`,
-      [tokenHash],
-    )
-    if (!record || record.used_at) {
-      throw new AppError('INVALID_TOKEN', 'Reset token is invalid or expired', 400)
-    }
-
-    const passwordHash = await bcrypt.hash(newPassword, 12)
-    await query(`UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2`, [
-      passwordHash,
-      record.user_id,
-    ])
-    await query(`UPDATE password_reset_tokens SET used_at = NOW() WHERE id = $1`, [record.id])
-
-    res.json({ data: { message: 'Password updated successfully.' } })
-  } catch (err) {
-    next(err)
-  }
-})
-
 // ─── Dev-only instant login (no password check) ───────────────────────────────
-// ONLY active in development. Lets you log in as any seeded user by email.
+// Active in non-production OR when ALLOW_DEV_LOGIN=true (set for internal
+// simulator / staging builds — never enable on a public-facing deployment).
 
-if (process.env['NODE_ENV'] !== 'production') {
+if (process.env['NODE_ENV'] !== 'production' || process.env['ALLOW_DEV_LOGIN'] === 'true') {
   router.post('/dev-login', async (req: Request, res: Response, next) => {
     try {
       const { email } = req.body as { email: string }

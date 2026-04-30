@@ -1,21 +1,25 @@
 'use client'
 
 import { Suspense, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 
 function CallbackHandler() {
-  const router = useRouter()
   const searchParams = useSearchParams()
 
+  // Run once on mount only — avoids re-firing when the URL changes as part
+  // of the navigation triggered below, which would race in React 18 concurrent
+  // mode and send the user back to /login before the dashboard fully loads.
   useEffect(() => {
     const token = searchParams.get('token')
     if (token) {
       localStorage.setItem('okr_access_token', token)
-      router.replace('/dashboard')
+      // Hard navigation: guarantees localStorage is committed before the new
+      // page's JS runs (no client-side re-render race possible).
+      window.location.replace('/dashboard')
     } else {
-      router.replace('/login?error=auth_failed')
+      window.location.replace('/login?error=auth_failed')
     }
-  }, [searchParams, router])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">

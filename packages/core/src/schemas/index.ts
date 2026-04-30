@@ -185,28 +185,6 @@ export const UpdateNotificationPrefsSchema = z.object({
   collaboratorRequests: z.boolean().optional(),
 })
 
-// ─── Auth ─────────────────────────────────────────────────────────────────────
-
-export const EmailPasswordLoginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8),
-})
-
-export const RegisterSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8).max(128),
-  name: z.string().min(1).max(200),
-})
-
-export const ForgotPasswordSchema = z.object({
-  email: z.string().email(),
-})
-
-export const ResetPasswordSchema = z.object({
-  token: z.string().min(1),
-  newPassword: z.string().min(8).max(128),
-})
-
 // ─── Meeting Digest ───────────────────────────────────────────────────────────
 
 export const UpdateMeetingDigestSchema = z.object({

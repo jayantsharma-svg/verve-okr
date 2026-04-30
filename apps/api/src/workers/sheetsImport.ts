@@ -22,13 +22,21 @@ async function getSheetsClient() {
   const keyBase64 = process.env['GOOGLE_SERVICE_ACCOUNT_KEY_BASE64']
   if (!keyBase64) throw new Error('GOOGLE_SERVICE_ACCOUNT_KEY_BASE64 not set')
 
-  // Authenticate as the service account directly (no impersonation).
-  // The spreadsheet lives in the service account's own Drive, invisible to all
-  // Workspace users — no org sharing restriction applies.
+  // Impersonate a Workspace admin via domain-wide delegation so the service
+  // account acts as an internal user — bypasses org sharing restrictions.
+  const impersonateAs = (process.env['GOOGLE_SHEETS_ADMIN_EMAILS'] ?? '')
+    .split(',')[0]?.trim() || process.env['GOOGLE_ADMIN_EMAIL']
+
+  if (!impersonateAs) throw new Error(
+    'Set GOOGLE_SHEETS_ADMIN_EMAILS (or GOOGLE_ADMIN_EMAIL) to a Workspace user ' +
+    'who has Editor access to the target sheet'
+  )
+
   const keyJson = JSON.parse(Buffer.from(keyBase64, 'base64').toString('utf8'))
   const auth = new google.auth.GoogleAuth({
     credentials: keyJson,
     scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+    clientOptions: { subject: impersonateAs },
   })
   return google.sheets({ version: 'v4', auth })
 }

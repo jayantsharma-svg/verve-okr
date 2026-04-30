@@ -16,25 +16,51 @@ const CONFIG_KEY = 'sheets_spreadsheet_id'
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 
-function buildAuth() {
+function buildAuthBase() {
   const keyBase64 = process.env['GOOGLE_SERVICE_ACCOUNT_KEY_BASE64']
   if (!keyBase64) throw new Error('GOOGLE_SERVICE_ACCOUNT_KEY_BASE64 not set')
   const keyJson = JSON.parse(Buffer.from(keyBase64, 'base64').toString('utf8'))
+
+  // Use domain-wide delegation: impersonate the first admin in GOOGLE_SHEETS_ADMIN_EMAILS
+  // so the API calls run as an internal Workspace user. This bypasses org-level
+  // restrictions that block sharing with external service account addresses.
+  const impersonateAs = (process.env['GOOGLE_SHEETS_ADMIN_EMAILS'] ?? '')
+    .split(',')[0]?.trim() || process.env['GOOGLE_ADMIN_EMAIL']
+
+  if (!impersonateAs) throw new Error(
+    'Set GOOGLE_SHEETS_ADMIN_EMAILS (or GOOGLE_ADMIN_EMAIL) to a Workspace user ' +
+    'who has Editor access to the target sheet'
+  )
+
+  return { keyJson, impersonateAs }
+}
+
+/** Auth for Sheets API — only needs spreadsheets scope (delegated). */
+function buildSheetsAuth() {
+  const { keyJson, impersonateAs } = buildAuthBase()
   return new google.auth.GoogleAuth({
     credentials: keyJson,
-    scopes: [
-      'https://www.googleapis.com/auth/spreadsheets',
-      'https://www.googleapis.com/auth/drive.file',   // manage files this SA created
-    ],
+    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+    clientOptions: { subject: impersonateAs },
+  })
+}
+
+/** Auth for Drive API — needs drive scope (used only when auto-creating a sheet). */
+function buildDriveAuth() {
+  const { keyJson, impersonateAs } = buildAuthBase()
+  return new google.auth.GoogleAuth({
+    credentials: keyJson,
+    scopes: ['https://www.googleapis.com/auth/drive'],
+    clientOptions: { subject: impersonateAs },
   })
 }
 
 async function getSheetsClient(): Promise<sheets_v4.Sheets> {
-  return google.sheets({ version: 'v4', auth: buildAuth() })
+  return google.sheets({ version: 'v4', auth: buildSheetsAuth() })
 }
 
 async function getDriveClient(): Promise<drive_v3.Drive> {
-  return google.drive({ version: 'v3', auth: buildAuth() })
+  return google.drive({ version: 'v3', auth: buildDriveAuth() })
 }
 
 // ─── Drive sharing ────────────────────────────────────────────────────────────

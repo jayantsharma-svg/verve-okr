@@ -284,7 +284,7 @@ ON CONFLICT (id) DO NOTHING;
 
 -- Mark last check-in time on all seeded KRs
 UPDATE key_results SET last_checkin_at = NOW() - INTERVAL '3 days'
-WHERE id LIKE '00000004-%';
+WHERE id::text LIKE '00000004-%';
 
 -- =============================================================================
 -- CHECK-INS
