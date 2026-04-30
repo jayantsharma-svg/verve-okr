@@ -3,7 +3,7 @@ import { query } from '../db/client.js'
 
 type AuditAction =
   | 'create' | 'update' | 'delete' | 'approve' | 'reject'
-  | 'checkin' | 'login' | 'logout'
+  | 'checkin' | 'login' | 'logout' | 'note'
 
 type Client = 'web' | 'mobile' | 'slack' | 'system'
 
