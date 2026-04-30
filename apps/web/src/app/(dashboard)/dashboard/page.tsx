@@ -93,7 +93,7 @@ export default function DashboardPage() {
       )}
 
       {/* Stat cards */}
-      <div className="grid grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         {isLoading ? (
           [1, 2, 3, 4].map((i) => (
             <div key={i} className="bg-white rounded-xl border border-ink-100 p-5 shadow-cap-sm">

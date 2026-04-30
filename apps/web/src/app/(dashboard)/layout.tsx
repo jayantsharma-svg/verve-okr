@@ -10,7 +10,7 @@ import { api } from '@/lib/api'
 import {
   LayoutDashboard, Target, CheckCircle, Users,
   Settings, Download, BarChart3, LogOut, Upload, Mail, Calendar, Sheet,
-  CalendarRange, ClipboardCheck, UserCog,
+  CalendarRange, ClipboardCheck, UserCog, FileText,
 } from 'lucide-react'
 import type { UserRole } from '@okr-tool/core'
 
@@ -117,6 +117,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* Bottom actions */}
         <div className="px-3 py-4 border-t border-ink-100 space-y-0.5">
+          <a
+            href="/docs"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-ink-600 hover:bg-ink-50 hover:text-ink-900 transition-colors"
+          >
+            <FileText size={16} className="text-ink-400" />
+            Documentation
+          </a>
           <a
             href="/api/export/okrs"
             className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-ink-600 hover:bg-ink-50 hover:text-ink-900 transition-colors"
